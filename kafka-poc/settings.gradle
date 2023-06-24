@@ -1,0 +1,8 @@
+rootProject.name = 'kafka-poc'
+include 'kafka-basic'
+include 'kafka-consumer-opensearch'
+include 'kafka-consumer-opensearch'
+include 'kafka-producer-wikimedia'
+include 'kafka-streams-wikimedia'
+include 'kafka-sql-demo'
+
