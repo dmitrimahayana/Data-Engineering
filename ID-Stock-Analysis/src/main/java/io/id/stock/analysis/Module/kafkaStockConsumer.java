@@ -29,8 +29,7 @@ public class kafkaStockConsumer {
     }
 
     private KafkaConsumer<String, String> createConnection() {
-
-        String bootStrapServer1 = "192.168.207.8:9092,192.168.207.8:9192";
+        String bootStrapServer1 = "localhost:39092,localhost:39093,localhost:39094";
         String bootStrapServer2 = "cluster.playground.cdkt.io:9092"; //kafka server from Conductor
 
         //Create producer properties

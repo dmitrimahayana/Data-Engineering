@@ -25,9 +25,11 @@ public class StreamStockAnalysis {
     private static Properties properties;
 
     private static Properties createProperties(){
+        String bootStrapServer1 = "localhost:39092,localhost:39093,localhost:39094";
+
         properties = new Properties();
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "stream-idx-stock-application");
-        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.207.8:9092");
+        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServer1);
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //chose none/earliest/latest
@@ -57,11 +59,11 @@ public class StreamStockAnalysis {
     }
 
     public static void main(String[] args) {
-        String inputTopic = "streaming.goapi.idx.stock.json";
+        String topic = "streaming.goapi.idx.stock.json";
 
         StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<String, String> inputStream = builder.stream(inputTopic);
+        KStream<String, String> inputStream = builder.stream(topic);
         groupTicker(inputStream);
 
         final Topology appTopology = builder.build();

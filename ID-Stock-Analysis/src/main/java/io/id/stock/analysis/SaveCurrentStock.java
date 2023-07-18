@@ -8,6 +8,9 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class SaveCurrentStock {
 
     private static final Logger log = LoggerFactory.getLogger(SaveCurrentStock.class.getSimpleName());
@@ -75,6 +78,15 @@ public class SaveCurrentStock {
 
                         //Insert to MongoDB
                         mongoDBConn.insertOneDocWithNoDuplicate("kafka", "stock-stream", record.value().toString());
+
+//                        //Insert to flat file
+//                        String filePath = "KStream-IDXStock.json";
+//                        try (FileWriter fileWriter = new FileWriter(filePath, true)) {
+//                            fileWriter.write(record.value());
+//                            fileWriter.write(System.lineSeparator());
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
                     } catch (Exception e) {
                         log.info("Error: "+e);
                     }
