@@ -48,6 +48,8 @@ libraryDependencies += "org.json4s" %% "json4s-jackson" % json4sVersion
 // https://mvnrepository.com/artifact/org.json4s/json4s-scalap
 libraryDependencies += "org.json4s" %% "json4s-scalap" % json4sVersion
 
+libraryDependencies += "ch.megard" %% "akka-http-cors" % "1.2.0"
+
 artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
   artifact.name + "_" + sv.binary +  "_" + module.revision + "." + artifact.extension
 }

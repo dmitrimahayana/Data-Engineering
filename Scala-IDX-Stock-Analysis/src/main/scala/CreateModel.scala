@@ -1,14 +1,16 @@
 import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.{OneHotEncoder, StandardScaler, StringIndexer, VectorAssembler}
 import org.apache.spark.ml.regression.{DecisionTreeRegressor, GeneralizedLinearRegression, LinearRegression}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.types.{DoubleType, LongType, StringType}
 
 import java.io.IOException
 
 object CreateModel {
   def main(args: Array[String]): Unit = {
-    val sparkMaster = "spark://192.168.9.195:7077"
+    val sparkMaster = "spark://192.168.1.7:7077"
 
     try {
       val spark = SparkSession.builder()
@@ -31,8 +33,6 @@ object CreateModel {
       println("scala: " + util.Properties.versionString)
       println("java: " + System.getProperty("java.version"))
 
-      import spark.implicits._
-
       val df = spark
         .read
         .format("mongodb")
@@ -44,11 +44,11 @@ object CreateModel {
       df.printSchema()
 
       val newDf = df.select("date", "ticker", "open", "volume", "close")
-        .withColumn("date", $"date" cast "String")
-        .withColumn("ticker", $"ticker" cast "String")
-        .withColumn("open", $"open" cast "Double")
-        .withColumn("volume", $"volume" cast "Long")
-        .withColumn("close", $"close" cast "Int")
+        .withColumn("date", col("date").cast(StringType))
+        .withColumn("ticker", col("ticker").cast(StringType))
+        .withColumn("open", col("open").cast(DoubleType))
+        .withColumn("volume", col("volume").cast(LongType))
+        .withColumn("close", col("close").cast(DoubleType))
       newDf.printSchema()
       println("Original Total Row: " + newDf.count())
 

@@ -8,7 +8,7 @@ import java.io.IOException
 
 object PredictData {
   def main(args: Array[String]): Unit = {
-    val sparkMaster = "spark://192.168.9.195:7077"
+    val sparkMaster = "spark://192.168.1.7:7077"
 
     try {
       val spark = SparkSession.builder()

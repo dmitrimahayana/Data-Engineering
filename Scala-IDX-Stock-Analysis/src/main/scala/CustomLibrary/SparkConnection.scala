@@ -2,6 +2,9 @@ package CustomLibrary
 
 import org.apache.spark.sql
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.{col, dense_rank, desc}
+import org.apache.spark.sql.types.{DoubleType, LongType, StringType}
 
 class SparkConnection(var ConnString: String, var AppName: String){
   var spark = SparkSession.builder()
@@ -30,18 +33,31 @@ class SparkConnection(var ConnString: String, var AppName: String){
     this.spark.getOrCreate().close()
   }
 
-  def CreateMongoDBSession(ConnString: String, Database: String, Collection: String): sql.DataFrame = {
+  def MongoDBGetAllData(ConnString: String): sql.DataFrame = {
     val df = spark.getOrCreate()
       .read
       .format("mongodb")
-      .option("database", Database)
-      .option("collection", Collection)
+      .option("database", "kafka")
+      .option("collection", "stock-stream")
       .option("spark.mongodb.input.partitioner", "MongoSinglePartitioner")
       .option("connection.uri", ConnString)
       .load()
-
+    println("Old Schema:")
     df.printSchema()
-    df
+
+    var newDf = df.select("date", "ticker", "open", "volume", "close")
+      .withColumn("date", col("date").cast(StringType))
+      .withColumn("ticker", col("ticker").cast(StringType))
+      .withColumn("open", col("open").cast(DoubleType))
+      .withColumn("volume", col("volume").cast(LongType))
+      .withColumn("close", col("close").cast(DoubleType))
+
+    newDf = newDf.withColumn("rank", dense_rank().over(Window.partitionBy("ticker").orderBy(desc("date"))))
+    println("New Schema:")
+    newDf.printSchema()
+    println("Original Total Row: " + newDf.count())
+
+    newDf
   }
 
 }
