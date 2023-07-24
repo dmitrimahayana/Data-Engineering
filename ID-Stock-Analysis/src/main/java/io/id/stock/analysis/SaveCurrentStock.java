@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class SaveCurrentStock {
 
@@ -35,10 +36,9 @@ public class SaveCurrentStock {
 
         //Create Kafka Consumer Connection
         Boolean localServer = true;
-        String topic = "group.stock"; //Must check if topic has been created by KSQL or KStream
         String groupId = "consumer-goapi-idx-stock";
         String offset = "earliest"; //use  earliest for testing purposes
-        kafkaStockConsumer consumer = new kafkaStockConsumer(localServer, topic, groupId, offset);
+        kafkaStockConsumer consumer = new kafkaStockConsumer(localServer, groupId, offset);
 
         //Create MongoDB Connection
         MongoDBStock mongoDBConn = new MongoDBStock("mongodb://localhost:27017");
@@ -62,22 +62,27 @@ public class SaveCurrentStock {
         });
 
         try {
+            String topic1 = "group.stock"; //Must check if topic has been created by KSQL or KStream
+            String topic2 = "streaming.goapi.idx.companies.json"; //Must check if topic has been created by KSQL or KStream
             //Create consumer
-            consumer.createConsumer();
+            consumer.createConsumer(Arrays.asList(topic1, topic2));
 
             //Show data
             while (true){
+                //Polling data from topics
                 ConsumerRecords<String, String> records = consumer.pollingData();
-
                 int recordCount = records.count();
                 log.info("Received "+recordCount+" records");
 
                 for(ConsumerRecord<String, String> record: records) {
                     try {
-                        log.info(record.key() + " --- " + record.value());
-
-                        //Insert to MongoDB
-                        mongoDBConn.insertOneDocWithNoDuplicate("kafka", "stock-stream", record.value().toString());
+                        System.out.println("key: " + record.key() + " --- value: " + record.value());
+                        //Insert to MongoDB based on the topic
+                        if (record.topic().toLowerCase().equals(topic1.toLowerCase())){
+                            mongoDBConn.insertOrUpdate("kafka", "stock-stream", record.value().toString());
+                        } else if(record.topic().toLowerCase().equals(topic2.toLowerCase())){
+                            mongoDBConn.insertOrUpdate("kafka", "company-stream", record.value().toString());
+                        }
 
 //                        //Insert to flat file
 //                        String filePath = "KStream-IDXStock.json";
@@ -88,7 +93,7 @@ public class SaveCurrentStock {
 //                            throw new RuntimeException(e);
 //                        }
                     } catch (Exception e) {
-                        log.info("Error: "+e);
+                        System.out.println("Error: "+e);
                     }
                 }
 

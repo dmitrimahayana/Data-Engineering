@@ -1,12 +1,12 @@
 package io.id.stock.analysis.Module;
 
 import com.mongodb.*;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +47,7 @@ public class MongoDBStock {
         try {
             mongodb = mongoClient.getDatabase(databaseName);
             collection = mongodb.getCollection(collectionName);
+
             InsertOneResult result = collection.insertOne(Document.parse(json));
             log.info("Inserted a document with the following id: " + result.getInsertedId().asObjectId().getValue().toString());
         } catch (MongoException me) {
@@ -54,19 +55,25 @@ public class MongoDBStock {
         }
     }
 
-    public void insertOneDocWithNoDuplicate(String databaseName, String collectionName, String json){
+    public void insertOrUpdate(String databaseName, String collectionName, String strJson){
         try {
             mongodb = mongoClient.getDatabase(databaseName);
             collection = mongodb.getCollection(collectionName);
+            Document newDoc = Document.parse(strJson); //Convert to Doc format
 
-            // Check for duplicates before inserting
-            Document existingDocument = collection.find(Document.parse(json)).first();
+            // Check if we need to update or insert
+            Document query = new Document();
+            query.append("id", newDoc.getString("id"));
+            Document existingDocument = collection.find(query).first();
             if (existingDocument == null) {
-                // Insert the document if no duplicates found
-                InsertOneResult result = collection.insertOne(Document.parse(json));
-                log.info("Inserted a document with the following id: " + result.getInsertedId().asObjectId().getValue().toString());
+                // Insert the document if no doc found
+                InsertOneResult result = collection.insertOne(newDoc);
+                System.out.println("Inserted a document with the following id: " + result.getInsertedId().asObjectId().getValue().toString());
             } else {
-                log.info("Duplicate document found. Skipping insertion.");
+                // Update the document if doc found with existing id
+                Bson filter = (Filters.eq("id", newDoc.getString("id")));
+                UpdateResult updateResult = collection.replaceOne(filter, newDoc);
+                System.out.println("Existing document " + newDoc.getString("id") + " modified document count: " + updateResult.getModifiedCount());
             }
         } catch (MongoException me) {
             log.info(me.getMessage());

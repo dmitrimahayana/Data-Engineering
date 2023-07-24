@@ -2,6 +2,7 @@ package io.id.stock.analysis;
 
 import com.google.gson.*;
 import io.id.stock.analysis.Module.IdxStock;
+import io.id.stock.analysis.Module.IdxCompany;
 import io.id.stock.analysis.Module.KafkaStockProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class GetStockPrice {
 
@@ -34,14 +37,14 @@ public class GetStockPrice {
         return response;
     }
 
-    private static String CountCompany(String value) {
-        return JsonParser.parseString(value)
-            .getAsJsonObject()
-            .get("data")
-            .getAsJsonObject()
-            .get("count")
-            .getAsString();
-    }
+//    private static String CountCompany(String value) {
+//        return JsonParser.parseString(value)
+//            .getAsJsonObject()
+//            .get("data")
+//            .getAsJsonObject()
+//            .get("count")
+//            .getAsString();
+//    }
 
     private static JsonArray getAPIResults(String apiUrl){
         try {
@@ -93,93 +96,118 @@ public class GetStockPrice {
 
     public static void main(String[] args) throws UnsupportedEncodingException {
         //Create Kafka Producer
-        String topic = "streaming.goapi.idx.stock.json";
-        KafkaStockProducer producer = new KafkaStockProducer(true, topic);
+        String topic1 = "streaming.goapi.idx.stock.json";
+        String topic2 = "streaming.goapi.idx.companies.json";
+        KafkaStockProducer producer = new KafkaStockProducer(true);
 
         //Base API URL
         String baseUrl = "https://api.goapi.id/v1/stock/idx/";
 
-        //URL Company
+        //Query Company Trending
         String apiUrl = baseUrl + "trending";
+        JsonArray companyTrendResults = getAPIResults(apiUrl);
 
-        //Query Company
-        JsonArray companyResults = getAPIResults(apiUrl);
+        //URL List All Company
+        String apiUrl2 = baseUrl + "companies";
+        JsonArray listCompany = getAPIResults(apiUrl2);
 
         try {
+            //Crete Kafka Connection
             producer.createProducerConn();
 
             //Counter
             int Counter = 0;
 
-            for (JsonElement companyElement : companyResults) {
+            for (JsonElement companyTrendElement : companyTrendResults) {
                 Counter++;
-                JsonObject companyObject = companyElement.getAsJsonObject();
-                String emitent = companyObject.get("ticker").getAsString();
-                String change = companyObject.get("change").getAsString();
-                String percent = companyObject.get("percent").getAsString();
-                log.info("number: "+ String.valueOf(Counter));
-                log.info("emitent: " + emitent);
-                log.info("change: " + change);
-                log.info("percent: " + percent);
+                JsonObject companyTrendObject = companyTrendElement.getAsJsonObject();
+                String emitent = companyTrendObject.get("ticker").getAsString();
+                String change = companyTrendObject.get("change").getAsString();
+                String percent = companyTrendObject.get("percent").getAsString();
+                System.out.println("number: "+ String.valueOf(Counter));
+                System.out.println("emitent: " + emitent);
+                System.out.println("change: " + change);
+                System.out.println("percent: " + percent);
 
-                //Query Historical Stock Price
-                String apiUrl2 = baseUrl + emitent + "/historical";
+                if (listCompany.isJsonNull() != true) {
+                    if (listCompany.size() > 0) {
+                        for (JsonElement listCompanyElement : listCompany) {
+                            JsonObject listCompanyObject = listCompanyElement.getAsJsonObject();
+                            String compTicker = listCompanyObject.get("ticker").getAsString();
+                            String compName = listCompanyObject.get("name").getAsString();
+                            String compLogo = listCompanyObject.get("logo").getAsString();
+                            if(compTicker.toUpperCase().equals(emitent.toUpperCase())){
+                                //Send Company Producer
+                                System.out.println(compTicker+" - "+compName+" - "+compLogo);
+                                IdxCompany company = new IdxCompany(compTicker, compTicker, compName, compLogo);
+                                String jsonCompany = new Gson().toJson(company);
+                                producer.startProducer(topic2, compTicker, jsonCompany);
+                            }
+                        }
+                    }
+                }
 
                 // Encode the parameter values
-                String encodedParam1 = URLEncoder.encode("2020-01-01", StandardCharsets.UTF_8.toString());
-                String encodedParam2 = URLEncoder.encode("2023-05-31", StandardCharsets.UTF_8.toString());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                String dateNow = LocalDate.now().format(formatter);
+                String encodedParam1 = URLEncoder.encode("2023-07-24", StandardCharsets.UTF_8.toString());
+                String encodedParam2 = URLEncoder.encode(dateNow, StandardCharsets.UTF_8.toString());
 
-                // Create the complete API URL with parameters
-                apiUrl2 = apiUrl2 + "?from=" + encodedParam1 + "&to=" + encodedParam2;
-
-                //Query Stock Price
-                JsonArray priceResults = getAPIResults(apiUrl2);
-                if (priceResults.isJsonNull() != true){
-                    if (priceResults.size() > 0){
-                        for (JsonElement priceElement : priceResults) {
-                            JsonObject priceObject = priceElement.getAsJsonObject();
-                            String ticker = priceObject.get("ticker").getAsString();
-                            String date = priceObject.get("date").getAsString();
-                            String open = priceObject.get("open").getAsString();
-                            String high = priceObject.get("high").getAsString();
-                            String low = priceObject.get("low").getAsString();
-                            String close = priceObject.get("close").getAsString();
-                            String volume = priceObject.get("volume").getAsString();
+                //Query Historical Stock Price
+                String apiUrl3 = baseUrl + emitent + "/historical";
+                apiUrl3 = apiUrl3 + "?from=" + encodedParam1 + "&to=" + encodedParam2;
+                JsonArray historicalPrices = getAPIResults(apiUrl3);
+                if (historicalPrices.isJsonNull() != true){
+                    if (historicalPrices.size() > 0){
+                        for (JsonElement historicalPriceElement : historicalPrices) {
+                            JsonObject historicalPriceObject = historicalPriceElement.getAsJsonObject();
+                            String ticker = historicalPriceObject.get("ticker").getAsString();
+                            String date = historicalPriceObject.get("date").getAsString();
+                            String open = historicalPriceObject.get("open").getAsString();
+                            String high = historicalPriceObject.get("high").getAsString();
+                            String low = historicalPriceObject.get("low").getAsString();
+                            String close = historicalPriceObject.get("close").getAsString();
+                            String volume = historicalPriceObject.get("volume").getAsString();
+//                            String open = "111"; //For Testing aggregation purpose
+//                            String high = "222"; //For Testing aggregation purpose
+//                            String low = "333"; //For Testing aggregation purpose
+//                            String close = "444"; //For Testing aggregation purpose
+//                            String volume = "555"; //For Testing aggregation purpose
                             String id = ticker + "_" + date;
 
-                            log.info("ticker: " + ticker);
-                            log.info("date: " + date);
-                            log.info("open: " + open);
-                            log.info("high: " + high);
-                            log.info("low: " + low);
-                            log.info("close: " + close);
-                            log.info("volume: " + volume);
-                            log.info(" ");
+                            System.out.println("ticker: " + ticker);
+                            System.out.println("date: " + date);
+                            System.out.println("open: " + open);
+                            System.out.println("high: " + high);
+                            System.out.println("low: " + low);
+                            System.out.println("close: " + close);
+                            System.out.println("volume: " + volume);
+                            System.out.println(" ");
 
                             IdxStock stock = new IdxStock(id, ticker, date, Double.valueOf(open),Double.valueOf(high),Double.valueOf(low),Double.valueOf(close),new BigInteger(volume));
                             String jsonStock = new Gson().toJson(stock);
 
-                            //Send Producer
-                            producer.startProducer(id, jsonStock);
+                            //Send Stock Producer
+                            producer.startProducer(topic1, id, jsonStock);
 
                         }
                     } else {
-                        log.info("Empty array");
+                        System.out.println("Empty array");
                     }
                 }
 
-//                //Only call the first 10 of Company
+//                //Only call the first 1 of Company
 //                if (Counter >= 1){
 //                    break;
 //                }
 
-                log.info("-----------------------------");
+                System.out.println("-----------------------------");
             }
 
             //Close Producer
             producer.flushAndCloseProducer();
         } catch (Exception e) {
-            log.info("Error producer: "+e);
+            System.out.println("Error producer: "+e);
         } finally {
             try{
                 Thread.sleep(10000);

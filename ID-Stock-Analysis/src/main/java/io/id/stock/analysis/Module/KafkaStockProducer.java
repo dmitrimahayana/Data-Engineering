@@ -10,13 +10,11 @@ import java.util.Properties;
 public class KafkaStockProducer {
 
     Boolean localServer;
-    String topic;
     KafkaProducer<String, String> producer;
 
     private static final Logger log = LoggerFactory.getLogger(KafkaStockProducer.class.getSimpleName());
 
-    public KafkaStockProducer(Boolean localServer, String topic) {
-        this.topic = topic;
+    public KafkaStockProducer(Boolean localServer) {
         this.localServer = localServer;
     }
 
@@ -62,7 +60,7 @@ public class KafkaStockProducer {
         this.producer = createConnection();
     }
 
-    public void startProducer(String key, String value){
+    public void startProducer(String topic, String key, String value){
         //Create a producer record
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, key, value);
 

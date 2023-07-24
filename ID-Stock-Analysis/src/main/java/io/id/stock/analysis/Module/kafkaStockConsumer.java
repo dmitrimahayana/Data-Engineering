@@ -8,21 +8,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 public class kafkaStockConsumer {
 
     Boolean localServer;
     String offset;
-    String topic;
     String groupId;
     KafkaConsumer<String, String> consumer;
 
     private static final Logger log = LoggerFactory.getLogger(kafkaStockConsumer.class.getSimpleName());
 
-    public kafkaStockConsumer(Boolean localServer, String topic, String groupId, String offset) {
-        this.topic = topic;
+    public kafkaStockConsumer(Boolean localServer, String groupId, String offset) {
         this.localServer = localServer;
         this.groupId = groupId;
         this.offset = offset;
@@ -56,9 +54,9 @@ public class kafkaStockConsumer {
         return new KafkaConsumer<>(properties);
     }
 
-    public void createConsumer() {
+    public void createConsumer(List<String> topics) {
         consumer = createConnection();
-        consumer.subscribe(Arrays.asList(topic));
+        consumer.subscribe(topics);
     }
 
     public ConsumerRecords<String, String> pollingData(){
