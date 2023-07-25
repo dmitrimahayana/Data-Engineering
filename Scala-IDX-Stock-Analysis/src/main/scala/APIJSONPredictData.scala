@@ -11,7 +11,9 @@ import ch.megard.akka.http.cors.scaladsl.CorsDirectives.cors
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, lit, row_number}
+import org.apache.spark.sql.functions
+import org.apache.spark.sql.functions.{col, lit, row_number, when}
+import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType}
 import spray.json.DefaultJsonProtocol._
 import spray.json.RootJsonFormat
 
@@ -27,7 +29,8 @@ object APIJSONPredictData {
   val spark = sparkConn.spark.getOrCreate()
   println("Spark Version: " + spark.version)
   // Get Stock from MongoDB
-  val kafkaStocks = sparkConn.MongoDBGetAllData("mongodb://localhost:27017/kafka.stock-stream");
+  val MongoStocks = sparkConn.MongoDBGetAllStock("mongodb://localhost:27017/kafka.stock-stream");
+  val MongoCompanyInfo = sparkConn.MongoDBGetCompanyInfo("mongodb://localhost:27017/kafka.stock-stream");
 
 //  val conf: Config = ConfigFactory.load("Config/application.conf")
   // needed to run the route
@@ -40,15 +43,17 @@ object APIJSONPredictData {
   // domain model
   final case class Ticker(id: String, ticker: String)
   final case class Stock(id: String, date: String, ticker: String, open: Double, volume: Long, close: Double)
+  final case class LastStock(id: String, date: String, ticker: String, open: Double, volume: Long, close: Double, changeval: String, changepercent: String, status: String, name: String, logo: String)
   final case class StockReqPrediction(date: String, ticker: String, open: Double, volume: Long)
-  final case class ListStock(listStock: List[Stock])
+//  final case class ListStock(listStock: List[Stock])
   final case class ListStockReqPrediction(listStock: List[StockReqPrediction])
 
   // formats for unmarshalling and marshalling
   implicit val itemFormat1: RootJsonFormat[Ticker] = jsonFormat2(Ticker.apply)
   implicit val itemFormat2: RootJsonFormat[Stock] = jsonFormat6(Stock.apply)
-  implicit val itemFormat3: RootJsonFormat[StockReqPrediction] = jsonFormat4(StockReqPrediction.apply)
-  implicit val orderFormat1: RootJsonFormat[ListStock] = jsonFormat1(ListStock.apply)
+  implicit val itemFormat3: RootJsonFormat[LastStock] = jsonFormat11(LastStock.apply)
+  implicit val itemFormat4: RootJsonFormat[StockReqPrediction] = jsonFormat4(StockReqPrediction.apply)
+//  implicit val orderFormat1: RootJsonFormat[ListStock] = jsonFormat1(ListStock.apply)
   implicit val orderFormat2: RootJsonFormat[ListStockReqPrediction] = jsonFormat1(ListStockReqPrediction.apply)
 
   // Return into JSON format
@@ -60,6 +65,21 @@ object APIJSONPredictData {
     val jsonStringArray = dataframe.toJSON.collect()
     for (row <- jsonStringArray) {
       val result = parse(row).extract[Stock]
+      println(result)
+      listObj = listObj :+ result
+    }
+    listObj
+  }
+
+  // Return into JSON format
+  def GetLastStockJSON(dataframe: sql.DataFrame): List[LastStock] = {
+    import org.json4s._
+    import org.json4s.native.JsonMethods._
+    implicit val formats = DefaultFormats
+    var listObj: List[LastStock] = Nil
+    val jsonStringArray = dataframe.toJSON.collect()
+    for (row <- jsonStringArray) {
+      val result = parse(row).extract[LastStock]
       println(result)
       listObj = listObj :+ result
     }
@@ -82,22 +102,57 @@ object APIJSONPredictData {
 
   // (fake) async database query api
   def findTickerHistory(ticker: String): Future[List[Stock]] = Future {
-    var detailTicker = kafkaStocks.filter("ticker == '" + ticker + "'")
-    detailTicker = detailTicker.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
-    GetStockJSON(detailTicker.select("id","date", "ticker", "open", "volume", "close"))
+    var histTicker = MongoStocks.filter("ticker == '" + ticker + "'")
+    histTicker = histTicker.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
+
+    GetStockJSON(histTicker.select("id","date", "ticker", "open", "volume", "close"))
   }
 
-  def AllTickerLastStock(): Future[List[Stock]] = Future {
-    var allTicker = kafkaStocks
-    allTicker = allTicker.filter("rank == 1")
+  def AllTickerLastStock(): Future[List[LastStock]] = Future {
+    var allTicker = MongoStocks
+    //Add id as new column in allTicker dataframe
     allTicker = allTicker.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
-    GetStockJSON(allTicker.select("id", "date", "ticker", "open", "volume", "close"))
+    val allTickerRank1 = allTicker.filter("rank == 1")
+    var allTickerRank2 = allTicker.filter("rank == 2")
+    //Add ticker2, rank2, yesterdayclose as new column in allTickerRank1 dataframe
+    allTickerRank2 = allTickerRank2
+      .withColumn("ticker2", col("ticker").cast(StringType))
+      .withColumn("rank2", col("rank").cast(IntegerType))
+      .withColumn("yesterdayclose", col("close").cast(DoubleType))
+    allTickerRank2 = allTickerRank2.select("ticker2", "rank2", "yesterdayclose")
+    //Inner join between allTickerRank1 and allTickerRank2 dataframe then create new column status, change, changeval, and changepercent
+    var joinTable1 = allTickerRank1.join(allTickerRank2, allTickerRank1("ticker") === allTickerRank2("ticker2"), "inner")
+    joinTable1 = joinTable1
+      .withColumn("status",
+        when(col("close") > col("yesterdayclose"), "Up")
+          .when(col("close") < col("yesterdayclose"), "Down")
+          .otherwise("Stay"))
+      .withColumn("change", functions.round(col("close") - col("yesterdayclose")))
+      .withColumn("changeval",
+        when(col("change") > lit(0), org.apache.spark.sql.functions.concat(lit("+"), col("change").cast(IntegerType)))
+          .when(col("change") < lit(0), col("change").cast(IntegerType))
+          .otherwise("0"))
+      .withColumn("changepercent",
+        when(col("change") > lit(0), org.apache.spark.sql.functions.concat(lit("+"), functions.abs((col("change") / col("yesterdayclose")) * 100).cast(IntegerType), lit("%")))
+          .when(col("change") < lit(0), org.apache.spark.sql.functions.concat(lit("-"), functions.abs((col("change") / col("yesterdayclose")) * 100).cast(IntegerType), lit("%")))
+          .otherwise("0%"))
+
+    var companyInfo = MongoCompanyInfo
+    companyInfo = companyInfo
+      .withColumn("ticker3", col("ticker").cast(StringType))
+    companyInfo = companyInfo.select("ticker3", "name", "logo")
+    //Inner join between joinTable1 and companyInfo dataframe
+    val joinTable2 = joinTable1.join(companyInfo, joinTable1("ticker") === companyInfo("ticker3"), "inner")
+
+    GetLastStockJSON(joinTable2.select("id", "date", "ticker", "open", "volume", "close", "change", "changeval", "changepercent", "status", "name", "logo" ))
+
   }
 
   def findAllEmitent(): Future[List[Ticker]] = Future {
-    var allTicker = kafkaStocks.select("ticker").groupBy("ticker").count().select("ticker")
+    var allTicker = MongoStocks.select("ticker").groupBy("ticker").count().select("ticker")
     val windowSpec = Window.orderBy("ticker")
     allTicker = allTicker.withColumn("id", row_number.over(windowSpec))
+
     GetTickerJSON(allTicker)
   }
 
@@ -121,6 +176,7 @@ object APIJSONPredictData {
 
     // Return JSON
     val listObj = GetStockJSON(predictions.select("id","date", "ticker", "open", "volume", "close"))
+
     listStockObj = listObj
     Future {Done}
   }
@@ -134,7 +190,7 @@ object APIJSONPredictData {
       concat(
         get {
           pathPrefix("ticker-list-last-stock") {
-            val maybeItem: Future[List[Stock]] = AllTickerLastStock()
+            val maybeItem: Future[List[LastStock]] = AllTickerLastStock()
             onSuccess(maybeItem) {
               case item if item.nonEmpty => complete(item)
               case _ => complete(StatusCodes.NotFound)

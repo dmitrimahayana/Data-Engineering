@@ -33,7 +33,7 @@ class SparkConnection(var ConnString: String, var AppName: String){
     this.spark.getOrCreate().close()
   }
 
-  def MongoDBGetAllData(ConnString: String): sql.DataFrame = {
+  def MongoDBGetAllStock(ConnString: String): sql.DataFrame = {
     val df = spark.getOrCreate()
       .read
       .format("mongodb")
@@ -42,7 +42,7 @@ class SparkConnection(var ConnString: String, var AppName: String){
       .option("spark.mongodb.input.partitioner", "MongoSinglePartitioner")
       .option("connection.uri", ConnString)
       .load()
-    println("Old Schema:")
+    println("Old Stock Schema:")
     df.printSchema()
 
     var newDf = df.select("date", "ticker", "open", "volume", "close")
@@ -53,11 +53,26 @@ class SparkConnection(var ConnString: String, var AppName: String){
       .withColumn("close", col("close").cast(DoubleType))
 
     newDf = newDf.withColumn("rank", dense_rank().over(Window.partitionBy("ticker").orderBy(desc("date"))))
-    println("New Schema:")
+    println("New Stock Schema:")
     newDf.printSchema()
     println("Original Total Row: " + newDf.count())
 
     newDf
+  }
+
+  def MongoDBGetCompanyInfo(ConnString: String): sql.DataFrame = {
+    val df = spark.getOrCreate()
+      .read
+      .format("mongodb")
+      .option("database", "kafka")
+      .option("collection", "company-stream")
+      .option("spark.mongodb.input.partitioner", "MongoSinglePartitioner")
+      .option("connection.uri", ConnString)
+      .load()
+    println("Company Schema:")
+    df.printSchema()
+
+    df
   }
 
 }
