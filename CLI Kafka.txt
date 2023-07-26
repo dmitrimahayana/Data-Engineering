@@ -9,10 +9,13 @@ kafka-storage.sh random-uuid
 ~/kafka_2.13-3.3.2/bin/kafka-server-start.sh ~/kafka_2.13-3.3.2/config/kraft/server.properties
 
 ##Start Kafka 2 Brokers
-kafka-storage.sh format -t ZRwaTcxuTOmpQ1Ep3GaveA -c ~/kafka_cluster_setting/server_0.properties
-kafka-storage.sh format -t ZRwaTcxuTOmpQ1Ep3GaveA -c ~/kafka_cluster_setting/server_1.properties
+kafka-storage.sh format -t bqfSbP7mRcmeQKdqwJXMcQ -c ~/kafka_cluster_setting/server_0.properties
+kafka-storage.sh format -t bqfSbP7mRcmeQKdqwJXMcQ -c ~/kafka_cluster_setting/server_1.properties
 kafka-server-start.sh ~/kafka_cluster_setting/server_0.properties
 kafka-server-start.sh ~/kafka_cluster_setting/server_1.properties
+
+##Start Docker Kafka 3 Broker
+Run Docker Compose file in Intellij or start from docker container
 
 ####################################################################################################################################
 
@@ -57,27 +60,38 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goap
 kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --topic demo_java --from-beginning
 kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --topic wikimedia.recentchange --from-beginning
 
-
+##Docker Topic
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --list
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic group.stock --create --replication-factor 2 --partitions 4
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic group.company --create --replication-factor 2 --partitions 4
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic streaming.goapi.idx.companies.json --create --replication-factor 2 --partitions 4
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic streaming.goapi.idx.stock.json --create --replication-factor 2 --partitions 4
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.companies.json
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.stock.json
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server localhost:39092 --version
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic join.stock.company --from-beginning
 ####################################################################################################################################
 
+##KSQLDB Start CLI Local
+docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
 
-##KSQLDB Start
+##KSQLDB Start Server Local
 sudo /usr/bin/ksql-server-start /etc/ksqldb/ksql-server.properties
 
-##KSQLDB CLI Local
+##KSQLDB Start CLI Local
 sudo /usr/bin/ksql http://0.0.0.0:8088
 
 ##KSQLDB Create Stream from Existing Topic 'streaming.goapi.idx.stock.json'
 #Create Stream
-CREATE OR REPLACE STREAM KSQLStreamIdxStockPrice (id VARCHAR, ticker VARCHAR, date VARCHAR, open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT)
+CREATE OR REPLACE STREAM ksqlstreamidxstockprice (id VARCHAR, ticker VARCHAR, date VARCHAR, open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT)
 WITH (kafka_topic='streaming.goapi.idx.stock.json', value_format='json', partitions=6);
 
 #Must set offset to earliest for testing purposes
 SET 'auto.offset.reset'='earliest';
 
 #Query to check duplication of data
-SELECT id, ticker, date, open, close, volume FROM KSQLStreamIdxStockPrice where ticker = 'BBCA' AND date = '2023-02-03';
-SELECT ticker, COUNT(ticker) AS COUNTTICKER FROM KSQLStreamIdxStockPrice GROUP BY ticker EMIT CHANGES;
+SELECT id, ticker, date, open, close, volume FROM ksqlstreamidxstockprice where ticker = 'BBCA' AND date = '2023-02-03';
+SELECT ticker, COUNT(ticker) AS COUNTTICKER FROM ksqlstreamidxstockprice GROUP BY ticker EMIT CHANGES;
  
 #Create Materialized View to remove duplication
 CREATE OR REPLACE TABLE currentIdxStockPrice AS
@@ -90,15 +104,18 @@ CREATE OR REPLACE TABLE currentIdxStockPrice AS
 		latest_by_offset(low) AS low, 
 		latest_by_offset(close) AS close, 
 		latest_by_offset(volume) AS volume
-	FROM KSQLStreamIdxStockPrice GROUP BY id EMIT CHANGES;
+	FROM ksqlstreamidxstockprice GROUP BY id EMIT CHANGES;
 
 #Query to check duplication of data
 SELECT id, ticker, date, open, close, volume FROM currentIdxStockPrice where ticker = 'GOTO' AND date = '2023-02-03';
 
 #Drop Table or Stream and Mention Delete Topic too if required to clean up existing topic
 DROP TABLE currentIdxStockPrice DELETE TOPIC;
-DROP STREAM KSQLStreamIdxStockPrice DELETE TOPIC;
+DROP STREAM ksqlstreamidxstockprice DELETE TOPIC;
 
 
 ####################################################################################################################################
-
+Error:
+ERROR Exception in thread "main" java.lang JAVAClassNotFound
+Solution:
+Run/Debug/Configuration > Modify Options > Add Dependency with provided

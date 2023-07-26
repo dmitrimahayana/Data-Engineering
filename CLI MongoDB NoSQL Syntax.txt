@@ -1,0 +1,26 @@
+use Dataset
+
+db.orders.insertMany([
+   { "item" : "almonds", "price" : 12, "quantity" : 2 },
+   { "item" : "pecans", "price" : 20, "quantity" : 1 },
+])
+
+db.inventory.insertMany([
+   { "sku" : "almonds", "description": "product 1", "instock" : 120 },
+   { "sku" : "cashews", "description": "product 3", "instock" : 60 },
+   { "sku" : "pecans", "description": "product 4", "instock" : 70 }
+])
+
+db.orders.aggregate([
+   { $match: { price: { $lt: 21 } } },
+   { $lookup: {
+         from: "inventory",
+         localField: "item",
+         foreignField: "sku",
+         as: "inventory_docs"
+   } },
+   { $sort: { price: -1 } },
+])
+
+
+http://localhost:28017/Dataset/mycollection/?

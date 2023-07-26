@@ -5,9 +5,10 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives.cors
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql
 import org.apache.spark.sql.expressions.Window
@@ -103,7 +104,7 @@ object APIJSONPredictData {
   // (fake) async database query api
   def findTickerHistory(ticker: String): Future[List[Stock]] = Future {
     var histTicker = MongoStocks.filter("ticker == '" + ticker + "'")
-    histTicker = histTicker.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
+    histTicker = histTicker.withColumn("id", functions.concat(col("ticker"), lit("-"), col("date")))
 
     GetStockJSON(histTicker.select("id","date", "ticker", "open", "volume", "close"))
   }
@@ -111,7 +112,7 @@ object APIJSONPredictData {
   def AllTickerLastStock(): Future[List[LastStock]] = Future {
     var allTicker = MongoStocks
     //Add id as new column in allTicker dataframe
-    allTicker = allTicker.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
+    allTicker = allTicker.withColumn("id", functions.concat(col("ticker"), lit("-"), col("date")))
     val allTickerRank1 = allTicker.filter("rank == 1")
     var allTickerRank2 = allTicker.filter("rank == 2")
     //Add ticker2, rank2, yesterdayclose as new column in allTickerRank1 dataframe
@@ -120,21 +121,32 @@ object APIJSONPredictData {
       .withColumn("rank2", col("rank").cast(IntegerType))
       .withColumn("yesterdayclose", col("close").cast(DoubleType))
     allTickerRank2 = allTickerRank2.select("ticker2", "rank2", "yesterdayclose")
-    //Inner join between allTickerRank1 and allTickerRank2 dataframe then create new column status, change, changeval, and changepercent
+    //Inner join between allTickerRank1 and allTickerRank2 dataframe
     var joinTable1 = allTickerRank1.join(allTickerRank2, allTickerRank1("ticker") === allTickerRank2("ticker2"), "inner")
+
+    //FOR TESTING PURPOSES
+    joinTable1 = joinTable1
+      .withColumn("close", functions.rand().multiply(30))
+      .withColumn("yesterdayclose", functions.rand().multiply(30))
+
+    //Create new columnn of status
     joinTable1 = joinTable1
       .withColumn("status",
         when(col("close") > col("yesterdayclose"), "Up")
           .when(col("close") < col("yesterdayclose"), "Down")
           .otherwise("Stay"))
+    //Create new columnn of change
+    joinTable1 = joinTable1
       .withColumn("change", functions.round(col("close") - col("yesterdayclose")))
+    //Create new columnn of changeval and changepercent
+    joinTable1 = joinTable1
       .withColumn("changeval",
-        when(col("change") > lit(0), org.apache.spark.sql.functions.concat(lit("+"), col("change").cast(IntegerType)))
+        when(col("change") > lit(0), functions.concat(lit("+"), col("change").cast(IntegerType)))
           .when(col("change") < lit(0), col("change").cast(IntegerType))
           .otherwise("0"))
       .withColumn("changepercent",
-        when(col("change") > lit(0), org.apache.spark.sql.functions.concat(lit("+"), functions.abs((col("change") / col("yesterdayclose")) * 100).cast(IntegerType), lit("%")))
-          .when(col("change") < lit(0), org.apache.spark.sql.functions.concat(lit("-"), functions.abs((col("change") / col("yesterdayclose")) * 100).cast(IntegerType), lit("%")))
+        when(col("change") > lit(0), functions.concat(lit("+"), functions.abs((col("change") / col("yesterdayclose")) * 100).cast(IntegerType), lit("%")))
+          .when(col("change") < lit(0), functions.concat(lit("-"), functions.abs((col("change") / col("yesterdayclose")) * 100).cast(IntegerType), lit("%")))
           .otherwise("0%"))
 
     var companyInfo = MongoCompanyInfo
@@ -171,7 +183,7 @@ object APIJSONPredictData {
 
     // Select example rows to display.
     predictions = predictions.withColumn("close", col("prediction"))
-    predictions = predictions.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
+    predictions = predictions.withColumn("id", functions.concat(col("ticker"), lit("-"), col("date")))
     predictions.select("id","date", "ticker", "open", "volume", "prediction", "close").show(20)
 
     // Return JSON

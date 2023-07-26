@@ -1,0 +1,6 @@
+#Check JAVA List
+sudo  update-java-alternatives --list
+
+#Update JAVA
+sudo  update-java-alternatives --set java-1.8.0-openjdk-amd64
+sudo  update-java-alternatives --set java-11-amazon-corretto
