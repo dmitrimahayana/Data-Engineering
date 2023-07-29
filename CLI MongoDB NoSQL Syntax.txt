@@ -23,4 +23,11 @@ db.orders.aggregate([
 ])
 
 
-http://localhost:28017/Dataset/mycollection/?
+##IDX Stock Kafka DB Query
+{ticker: "NATO", date: "2023-07-26", id: /.*27.*/}
+{ticker: "MAPI", $or: [ { date: "2023-07-27" }, { date: "2023-07-26" } ]}
+{id: "GOTO_2023-07-28"}
+{date: "2023-07-28"}
+{$or: [ { id: "GOTO_2023-07-28" }, { id: "GOTO_2023-07-26" } ]}
+{logo : /.*ttp.*/}
+{id: /.*20.*/}

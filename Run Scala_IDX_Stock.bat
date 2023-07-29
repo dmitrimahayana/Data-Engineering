@@ -1,0 +1,1 @@
+spark-submit --master spark://172.20.224.1:7077 --class SparkStreaming --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1 "D:\00 Project\00 My Project\Jars\Scala-IDX-Stock-Analysis.jar"

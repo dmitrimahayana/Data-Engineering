@@ -1,0 +1,7 @@
+Edit System Environment Variables:
+1. HADOOP_HOME : D:\03 Data Tools\winutils-master2\hadoop-3.3.1
+2. JAVA_HOME : D:\02 Program Files\Java
+3. SPARK_HOME : D:\03 Data Tools\spark-3.4.1-bin-hadoop3
+4. Path : 	%SPARK_HOME%\bin
+			%HADOOP_HOME%\bin
+			%JAVA_HOME%\bin

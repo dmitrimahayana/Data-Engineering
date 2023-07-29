@@ -1,0 +1,1 @@
+spark-submit --master spark://192.168.1.8:7077 --class Main "D:\00 Project\00 My Project\Jars\Scala_Amazon_ETL.jar"

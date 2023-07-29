@@ -13,8 +13,6 @@ sudo apt-get install openssh-client openssh-server
 ##Deploying PySpark in Linux
 spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.3.2 /mnt/d/00\ Project/00\ My\ Project/IdeaProjects/PyStocksPrediction/StocksPrediction.py
 
-
 ##Deploying PySpark in Windows
 spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.3.2 D:\00 Project\00 My Project\IdeaProjects\PyStocksPrediction\StocksPrediction.py
-
 spark-submit --packages io.id.stock.analysis.StocksPrediction /mnt/d/00\ Project/00\ My\ Project/IdeaProjects/ID-Stock-Analysis/out/artifacts/ID_Stock_Analysis_main_jar
