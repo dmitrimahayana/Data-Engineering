@@ -1,0 +1,18 @@
+#Run Docker Compose
+docker compose up -d
+
+#Check List Container
+docker ps
+
+#Docker create network
+docker network create --driver bridge my_docker_network
+
+#Docker check network connection
+docker network inspect my_docker_network
+
+#Docker add network connection between container
+docker network connect my_docker_network spark-master
+docker network connect my_docker_network mongodb-server
+
+#Container Terminal
+docker exec -it spark-master /bin/bash

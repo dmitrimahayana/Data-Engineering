@@ -1,1 +1,0 @@
-spark-submit --master spark://172.20.224.1:7077 --packages org.mongodb.spark:mongo-spark-connector_2.12:10.2.0 "D:\00 Project\00 My Project\Jars\Scala_IDX_Stock_Analysis_PredictData\Scala-IDX-Stock-Analysis.jar"

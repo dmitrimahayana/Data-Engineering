@@ -1,0 +1,1 @@
+spark-class org.apache.spark.deploy.worker.Worker spark://192.168.1.7:7077 -m 6g -c 3
