@@ -14,15 +14,18 @@ lazy val root = (project in file("."))
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-core
 libraryDependencies += "org.apache.spark" %% "spark-core" % "3.4.1"
+//libraryDependencies += "org.apache.spark" %% "spark-core" % "3.3.1"
 
-// https://mvnrepository.com/artifact/org.apache.spark/spark-sql
+  // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.4.1" % "provided"
+//libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.3.1"
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-mllib
 libraryDependencies += "org.apache.spark" %% "spark-mllib" % "3.4.1" % "provided"
+//libraryDependencies += "org.apache.spark" %% "spark-mllib" % "3.3.1"
 
-// https://mvnrepository.com/artifact/org.mongodb.spark/mongo-spark-connector
-libraryDependencies += "org.mongodb.spark" %% "mongo-spark-connector" % "10.1.1"
+  // https://mvnrepository.com/artifact/org.mongodb.spark/mongo-spark-connector
+libraryDependencies += "org.mongodb.spark" %% "mongo-spark-connector" % "10.2.0"
 
 // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync
 libraryDependencies += "org.mongodb" % "mongodb-driver-sync" % "4.10.1"
@@ -50,6 +53,5 @@ libraryDependencies += "org.json4s" %% "json4s-scalap" % json4sVersion
 
 libraryDependencies += "ch.megard" %% "akka-http-cors" % "1.2.0"
 
-artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-  artifact.name + "_" + sv.binary +  "_" + module.revision + "." + artifact.extension
-}
+// https://mvnrepository.com/artifact/org.apache.spark/spark-sql-kafka-0-10
+libraryDependencies += "org.apache.spark" %% "spark-sql-kafka-0-10" % "3.4.1" % Test

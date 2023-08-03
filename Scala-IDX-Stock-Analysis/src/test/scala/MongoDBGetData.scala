@@ -1,4 +1,3 @@
-import APIJSONPredictData.MongoStocks
 import CustomLibrary.SparkConnection
 import org.apache.spark.sql.functions
 import org.apache.spark.sql.functions._
@@ -7,7 +6,8 @@ import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType}
 object MongoDBGetData {
   def main(args: Array[String]): Unit = {
     // Create Spark Session
-    val sparkMaster = "spark://172.20.224.1:7077"
+    //    val sparkMaster = "spark://172.20.224.1:7077"
+    val sparkMaster = "spark://172.20.0.2:7077"
     val sparkAppName = "Scala REST API IDX Stock Prediction"
     val sparkConn = new SparkConnection(sparkMaster, sparkAppName)
     sparkConn.CreateSparkSession()
@@ -20,7 +20,7 @@ object MongoDBGetData {
 //    allTicker = allTicker.withColumn("id",row_number.over(windowSpec))
 //    allTicker.show()
 
-    var allTicker = MongoStocks
+    var allTicker = kafkaStocks
     //Add id as new column in allTicker dataframe
     allTicker = allTicker.withColumn("id", org.apache.spark.sql.functions.concat(col("ticker"), lit("-"), col("date")))
     val allTickerRank1 = allTicker.filter("rank == 1")

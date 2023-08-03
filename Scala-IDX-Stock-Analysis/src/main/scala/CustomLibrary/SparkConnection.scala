@@ -25,12 +25,9 @@ class SparkConnection(var ConnString: String, var AppName: String){
       .config("spark.sql.broadcastTimeout", "1000")
       .config("spark.sql.autoBroadcastJoinThreshold", "100485760")
       .config("spark.sql.shuffle.partitions", "1000")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
 
     this.spark = localSpark
-  }
-
-  def CloseSession(): Unit = {
-    this.spark.getOrCreate().close()
   }
 
   def MongoDBGetAllStock(ConnString: String): sql.DataFrame = {
@@ -45,7 +42,8 @@ class SparkConnection(var ConnString: String, var AppName: String){
     println("Old Stock Schema:")
     df.printSchema()
 
-    var newDf = df.select("date", "ticker", "open", "volume", "close")
+//    var newDf = df.select("date", "ticker", "open", "volume", "close")
+    var newDf = df
       .withColumn("date", col("date").cast(StringType))
       .withColumn("ticker", col("ticker").cast(StringType))
       .withColumn("open", col("open").cast(DoubleType))
@@ -73,6 +71,10 @@ class SparkConnection(var ConnString: String, var AppName: String){
     df.printSchema()
 
     df
+  }
+
+  def closeConnection(): Unit = {
+    this.spark.getOrCreate().close()
   }
 
 }
