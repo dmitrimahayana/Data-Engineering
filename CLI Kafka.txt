@@ -69,6 +69,7 @@ docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kaf
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.stock.json
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server localhost:39092 --version
 docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic join.stock.company --from-beginning
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic test-topic
 ####################################################################################################################################
 
 ##KSQLDB Docker Start CLI
@@ -133,7 +134,38 @@ DROP STREAM ksqlstreamcompany DELETE TOPIC;
 
 
 ####################################################################################################################################
+
 Error:
 ERROR Exception in thread "main" java.lang JAVAClassNotFound
 Solution:
 Run/Debug/Configuration > Modify Options > Add Dependency with provided
+
+
+####################################################################################################################################
+
+##Kafka Schema API (using Postman)
+#Create Schema Name
+POST: http://localhost:8282/subjects/IDX-Stock/versions/
+Headers: Content-Type: application/vnd.schemaregistry.v1+json
+Body: 
+{ "schema":
+"{ \"type\": \"record\",\"name\": \"Stock\", \"fields\": [{\"name\": \"id\", \"type\": \"string\"}, {\"name\": \"ticker\", \"type\": \"string\"}, {\"name\": \"date\", \"type\": \"string\"}, {\"name\": \"open\", \"type\": \"double\"}, {\"name\": \"high\", \"type\": \"double\"}, {\"name\": \"low\", \"type\": \"double\"}, {\"name\": \"close\", \"type\": \"double\"}, {\"name\": \"volume\", \"type\": \"long\"}  ]}"
+}
+
+#Get Schema by name and version
+GET: http://localhost:8282/subjects/IDX-Stock/versions/
+GET: http://localhost:8282/subjects/IDX-Stock/versions/1
+
+#Update Schema Config to make it evolve everytime we update the Schema
+PUT - http://localhost:8282/config/IDX-Stock
+Headers: Content-Type: application/vnd.schemaregistry.v1+json
+Body:
+{
+   "compatibility": "FORWARD"
+}
+
+#Get Schema Config
+GET: http://localhost:8282/config/IDX-Stock
+
+#Delete Schema by name
+DELETE: http://localhost:8282/subjects/IDX-Stock

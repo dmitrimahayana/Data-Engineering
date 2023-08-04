@@ -13,6 +13,12 @@ docker network inspect my_docker_network
 #Docker add network connection between container
 docker network connect my_docker_network spark-master
 docker network connect my_docker_network mongodb-server
+docker network connect my_docker_network airflow-airflow-webserver-1
+docker network connect my_docker_network airflow-airflow-scheduler-1
+docker network connect my_docker_network airflow-airflow-triggerer-1
+docker network connect my_docker_network airflow-airflow-worker-1
+docker network connect my_docker_network airflow-postgres-1
+docker network connect my_docker_network airflow-redis-1
 
 #Container Terminal
 docker exec -it spark-master /bin/bash
