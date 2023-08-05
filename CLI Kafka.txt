@@ -34,13 +34,11 @@ listeners=PLAINTEXT://:9192,CONTROLLER://:9193
 advertised.listeners=PLAINTEXT://localhost:9192
 log.dirs=/tmp/kraft-combined-logs-log_1
 
-
 ####################################################################################################################################
-
 
 ##Topic
 kafka-topics.sh --bootstrap-server localhost:9092 --list
-kafka-topics.sh --bootstrap-server localhost:9092 --topic streaming.goapi.idx.stock.json --create --partitions 6 --replication-factor 2
+kafka-topics.sh --bootstrap-server localhost:9092 --create --partitions 6 --replication-factor 2 --topic streaming.goapi.idx.stock.json
 kafka-topics.sh --bootstrap-server localhost:9192 --describe --topic streaming.goapi.idx.stock.json
 kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic streaming.goapi.idx.stock.json
 
@@ -49,27 +47,31 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 --topic wikimedia.re
 kafka-console-producer.sh --bootstrap-server localhost:9092 --producer-property partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner --topic wikimedia.recentchange
 
 ##Start consumer local
-kafka-console-consumer.sh --bootstrap-server localhost:9192 --topic streaming.goapi.idx.stock.json --from-beginning
+kafka-console-consumer.sh --bootstrap-server localhost:9192 --from-beginning --topic streaming.goapi.idx.stock.json
 kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
 kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group consumer-goapi-idx-stock
-kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic group.stock --execute
-kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic group.company --execute
-kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic join.stock.company --execute
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --execute --topic group.stock
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --execute --topic group.company
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --execute --topic join.stock.company
 
 ##Start consumer conductor
-kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --topic demo_java --from-beginning
-kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --topic wikimedia.recentchange --from-beginning
+kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --from-beginning --topic demo_java
+kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --from-beginning --topic wikimedia.recentchange
 
 ##Docker Topic
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --list
-docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic streaming.goapi.idx.companies.json --create --replication-factor 2 --partitions 4
-docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic streaming.goapi.idx.stock.json --create --replication-factor 2 --partitions 4
-docker exec -ti kafka1 /usr/bin/kafka-consumer-groups --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic join.stock.company --execute
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --config cleanup.policy=compact --topic streaming.goapi.idx.stock.json
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --config cleanup.policy=compact --topic streaming.goapi.idx.companies.json
+docker exec -ti kafka1 /usr/bin/kafka-consumer-groups --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --execute --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic join.stock.company
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic group.stock
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic group.company
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic join.stock.company
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.companies.json
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.stock.json
-docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server localhost:39092 --version
-docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic join.stock.company --from-beginning
-docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic test-topic
+
+##Docker update schema policy to compact to avoid error in restarting schema server
+docker exec -ti kafka1 /usr/bin/kafka-configs --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --entity-type topics --entity-name _schemas --alter --add-config cleanup.policy=compact
+
 ####################################################################################################################################
 
 ##KSQLDB Docker Start CLI
@@ -82,7 +84,7 @@ sudo /usr/bin/ksql-server-start /etc/ksqldb/ksql-server.properties
 sudo /usr/bin/ksql http://0.0.0.0:8088
 
 ##KSQLDB Create Stream from Existing Topic
-#Must set offset from latest to earliest
+#Set offset from latest to earliest to check the value
 SET 'auto.offset.reset'='earliest';
 SET 'auto.offset.reset'='latest';
 
@@ -90,15 +92,22 @@ SET 'auto.offset.reset'='latest';
 CREATE OR REPLACE STREAM ksqlstreamstock (id VARCHAR, ticker VARCHAR, date VARCHAR, open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT)
 WITH (kafka_topic='streaming.goapi.idx.stock.json', value_format='json', partitions=4);
 
+#Create Stock Stream with Avro Format
+CREATE OR REPLACE STREAM ksqlstreamstock (id VARCHAR, ticker VARCHAR, date VARCHAR, open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT)
+WITH (KAFKA_TOPIC='streaming.goapi.idx.stock.json', VALUE_FORMAT='AVRO', partitions=4);
+
 #Create Company Stream
 CREATE OR REPLACE STREAM ksqlstreamcompany (id VARCHAR, ticker VARCHAR, name VARCHAR, logo VARCHAR)
 WITH (kafka_topic='streaming.goapi.idx.companies.json', value_format='json', partitions=4);
 
+#Create Company Stream with Avro Format
+CREATE OR REPLACE STREAM ksqlstreamcompany (id VARCHAR, ticker VARCHAR, name VARCHAR, logo VARCHAR)
+WITH (kafka_topic='streaming.goapi.idx.companies.json', value_format='AVRO', partitions=4);
+
 #Query to check duplication of data
-SELECT * FROM ksqlstreamstock where ticker = 'BBCA' AND date = '2023-07-27';
 SELECT ticker, COUNT(ticker) AS COUNTTICKER FROM ksqlstreamstock GROUP BY ticker EMIT CHANGES;
 SELECT * FROM ksqlstreamstock where id = 'GOTO_2023-07-28';
-SELECT * FROM ksqlstreamcompany where id = 'GOTO_2023-07-28';
+SELECT * FROM ksqlstreamcompany where id = 'GOTO';
  
 #Create Stock Materialized View to Remove Duplication
 CREATE OR REPLACE TABLE ksqlgroupstock AS
@@ -123,7 +132,7 @@ CREATE OR REPLACE TABLE ksqlgroupcompany AS
 	FROM ksqlstreamcompany GROUP BY id EMIT CHANGES;
 
 #Query to check duplication of data
-SELECT * FROM ksqlgroupstock where ticker = 'GOTO' AND date = '2023-07-27';
+SELECT * FROM ksqlgroupstock where id = 'GOTO_2023-07-28';
 SELECT * FROM ksqlgroupcompany where ticker = 'GOTO';
 
 #Drop Table or Stream and Mention Delete Topic too if required to clean up existing topic
