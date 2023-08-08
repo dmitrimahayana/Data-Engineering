@@ -1,0 +1,2 @@
+##Flink SQL Client Docker
+docker-compose run sql-client
