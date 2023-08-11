@@ -68,7 +68,7 @@ docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1
 docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic join.stock.company
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.companies.json
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.stock.json
-
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic KSQLGROUPSTOCK
 ##Docker update schema policy to compact to avoid error in restarting schema server
 docker exec -ti kafka1 /usr/bin/kafka-configs --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --entity-type topics --entity-name _schemas --alter --add-config cleanup.policy=compact
 
@@ -112,7 +112,8 @@ SELECT * FROM ksqlstreamcompany where id = 'GOTO';
 #Create Stock Materialized View to Remove Duplication
 CREATE OR REPLACE TABLE ksqlgroupstock AS
 	SELECT
-		id,
+		id AS id,
+		AS_VALUE(id) AS stockid,
 		latest_by_offset(ticker) AS ticker,
 		latest_by_offset(date) AS date,
 		latest_by_offset(open) AS open, 
@@ -125,7 +126,8 @@ CREATE OR REPLACE TABLE ksqlgroupstock AS
 #Create Company Materialized View to Remove Duplication
 CREATE OR REPLACE TABLE ksqlgroupcompany AS
 	SELECT
-		id,
+		id AS id,
+		AS_VALUE(id) AS companyid,
 		latest_by_offset(ticker) AS ticker,
 		latest_by_offset(name) AS name,
 		latest_by_offset(logo) AS logo
@@ -137,9 +139,9 @@ SELECT * FROM ksqlgroupcompany where ticker = 'GOTO';
 
 #Drop Table or Stream and Mention Delete Topic too if required to clean up existing topic
 DROP TABLE ksqlgroupstock DELETE TOPIC;
-DROP STREAM ksqlstreamstock DELETE TOPIC;
+DROP STREAM ksqlstreamstock;
 DROP TABLE ksqlgroupcompany DELETE TOPIC;
-DROP STREAM ksqlstreamcompany DELETE TOPIC;
+DROP STREAM ksqlstreamcompany;
 
 
 ####################################################################################################################################
@@ -170,11 +172,11 @@ PUT - http://localhost:8282/config/IDX-Stock
 Headers: Content-Type: application/vnd.schemaregistry.v1+json
 Body:
 {
-   "compatibility": "FORWARD"
+   "compatibility": "BACKWARD_TRANSITIVE"
 }
 
 #Get Schema Config
 GET: http://localhost:8282/config/IDX-Stock
 
 #Delete Schema by name
-DELETE: http://localhost:8282/subjects/IDX-Stock
+DELETE: http://localhost:8282/subjects/IDX-Company/versions/8

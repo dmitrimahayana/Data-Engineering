@@ -1,2 +1,17 @@
 ##Flink SQL Client Docker
 docker-compose run sql-client
+
+##Download Maven Archtype for 
+mvn archetype:generate -DarchetypeGroupId=org.apache.flink -DarchetypeArtifactId=flink-walkthrough-datastream-java -DarchetypeVersion=1.17.1 -DgroupId=Java-Flink-FraudDetection -DartifactId=Java-Flink-FraudDetection -Dversion=0.1 -Dpackage=spendreport -DinteractiveMode=false
+
+##Create Kafka Topic for Flink
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --topic flink_input
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --topic flink_output
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic flink_input
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic flink_output
+
+##Start Kafka Producer
+docker exec -ti kafka1 /usr/bin/kafka-console-producer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic flink_input
+
+##Start Kafka Consumer
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic flink_input
