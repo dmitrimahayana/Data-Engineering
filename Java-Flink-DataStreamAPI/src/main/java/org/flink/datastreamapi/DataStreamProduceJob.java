@@ -37,6 +37,6 @@ public class DataStreamProduceJob {
             TimeUnit.SECONDS.sleep(5);
         }
 
-        env.execute("Kafka Flink Producer");
+        env.execute("Flink Kafka Topic Producer");
     }
 }

@@ -9,7 +9,9 @@ import org.apache.flink.types.Row;
 public class DataStreamSimpleSQL {
     public static void main(String[] args) throws Exception {
         // create environments of both APIs
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+//        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.createRemoteEnvironment("localhost", 8383);
+
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
         // create a DataStream
@@ -32,7 +34,7 @@ public class DataStreamSimpleSQL {
 
         // add a printing sink and execute in DataStream API
         resultStream.print();
-        env.execute();
+        env.execute("Flink Streaming Simple Job");
 
     }
 }

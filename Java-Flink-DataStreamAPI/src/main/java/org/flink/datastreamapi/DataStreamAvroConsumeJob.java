@@ -57,42 +57,6 @@ public class DataStreamAvroConsumeJob {
                                 .setStartFromEarliest());
         kafkaStream2.print();
 
-        env.execute("Kafka Flink Consumer");
-    }
-
-    // Avro Deserialization Schema
-    private static class AvroDeserializationSchema implements KeyedDeserializationSchema<GenericRecord> {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public GenericRecord deserialize(byte[] messageKey, byte[] message, String topic, int partition, long offset) {
-//            KafkaAvroDeserializer deserializer = new KafkaAvroDeserializer();
-//            // Configure the deserializer with the appropriate schema registry URL
-//            // deserializer.configure(schemaRegistryConfig, isKey);
-//            return (GenericRecord) deserializer.deserialize(topic, message);
-
-            KafkaAvroDeserializer deserializer = new KafkaAvroDeserializer();
-            Map<String, String> config = new HashMap<>();
-            config.put("schema.registry.url", "http://localhost:8282");
-            deserializer.configure(config, false);
-            return (GenericRecord) deserializer.deserialize(topic, message);
-
-//            KafkaAvroDeserializer valueDeserializer = new KafkaAvroDeserializer();
-//            Map<String, Object> valueDeserializerConfig = new HashMap<>();
-//            valueDeserializerConfig.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8282");
-//            valueDeserializer.configure(valueDeserializerConfig, false);
-//            return (GenericRecord) valueDeserializer.deserialize(topic, message);
-        }
-
-        @Override
-        public boolean isEndOfStream(GenericRecord nextElement) {
-            return false;
-        }
-
-        @Override
-        public TypeInformation<GenericRecord> getProducedType() {
-            // Adjust this as per your needs
-            return TypeInformation.of(GenericRecord.class);
-        }
+        env.execute("Flink Kafka Topic Consumer");
     }
 }

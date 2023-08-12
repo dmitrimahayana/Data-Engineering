@@ -133,11 +133,46 @@ CREATE OR REPLACE TABLE ksqlgroupcompany AS
 		latest_by_offset(logo) AS logo
 	FROM ksqlstreamcompany GROUP BY id EMIT CHANGES;
 
+#Join Stock and Company Materialized Table
+CREATE OR REPLACE STREAM ksqlstreamjoinstockcompany AS
+	SELECT 
+		stream1.id AS id,
+		stream1.ticker AS ticker,
+		date AS date,
+		open AS open, 
+		high AS high, 
+		low AS low, 
+		close AS close, 
+		volume AS volume,
+		name AS name,
+		logo AS logo
+	FROM ksqlstreamstock stream1
+	INNER JOIN ksqlstreamcompany stream2
+	WITHIN 7 DAYS GRACE PERIOD 15 MINUTES
+	ON stream1.ticker = stream2.ticker EMIT CHANGES;
+	
+CREATE OR REPLACE TABLE ksqltablejoinstockcompany AS
+	SELECT 
+		id AS id,
+		AS_VALUE(id) AS stockid,
+		latest_by_offset(ticker) AS ticker,
+		latest_by_offset(date) AS date,
+		latest_by_offset(open) AS open, 
+		latest_by_offset(high) AS high, 
+		latest_by_offset(low) AS low, 
+		latest_by_offset(close) AS close, 
+		latest_by_offset(volume) AS volume,
+		latest_by_offset(name) AS name,
+		latest_by_offset(logo) AS logo
+	FROM ksqlstreamjoinstockcompany GROUP BY id EMIT CHANGES;
+
 #Query to check duplication of data
 SELECT * FROM ksqlgroupstock where id = 'GOTO_2023-07-28';
 SELECT * FROM ksqlgroupcompany where ticker = 'GOTO';
 
 #Drop Table or Stream and Mention Delete Topic too if required to clean up existing topic
+DROP TABLE ksqltablejoinstockcompany DELETE TOPIC;
+DROP STREAM ksqlstreamjoinstockcompany;
 DROP TABLE ksqlgroupstock DELETE TOPIC;
 DROP STREAM ksqlstreamstock;
 DROP TABLE ksqlgroupcompany DELETE TOPIC;
