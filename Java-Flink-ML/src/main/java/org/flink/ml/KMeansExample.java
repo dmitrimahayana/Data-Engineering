@@ -92,6 +92,6 @@ public class KMeansExample {
 		}
 
 		// Execute program, beginning computation.
-		env.execute("Flink ML Sample");
+		env.execute("Flink ML KMeans");
 	}
 }
