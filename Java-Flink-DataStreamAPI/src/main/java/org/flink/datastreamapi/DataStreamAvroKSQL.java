@@ -11,6 +11,7 @@ import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.CloseableIterator;
 
 public class DataStreamAvroKSQL {
     public static void main(String[] args) throws Exception {
@@ -189,7 +190,11 @@ public class DataStreamAvroKSQL {
 //        Table resultTable5 = tableEnv.sqlQuery("SELECT * FROM flink_kafka_topic_stock LIMIT 5");
 //        Table resultTable6 = tableEnv.sqlQuery("SELECT * FROM flink_kafka_topic_company LIMIT 5");
 
-        DataStream<Row> resultStream1 = tableEnv.toAppendStream(resultTable1, Row.class);
+        for (CloseableIterator<Row> it = resultTable1.execute().collect(); it.hasNext(); ) {
+            Row row = it.next();
+            System.out.println("Value: " + row.getField("EVENT_TIME") + " --- " + row.getField("STOCKID") + " --- " + row.getField("CLOSE") + " --- " + row.getField("NAME"));
+        }
+//        DataStream<Row> resultStream1 = tableEnv.toAppendStream(resultTable1, Row.class);
 //        DataStream<Row> resultStream2 = tableEnv.toAppendStream(resultTable2, Row.class);
 //        DataStream<Row> resultStream3 = tableEnv.toAppendStream(resultTable3, Row.class);
 //        DataStream<Row> resultStream4 = tableEnv.toAppendStream(resultTable4, Row.class);
@@ -197,7 +202,7 @@ public class DataStreamAvroKSQL {
 //        DataStream<Row> resultStream6 = tableEnv.toAppendStream(resultTable5, Row.class);
 
         // Print the results to stdout for testing
-        resultStream1.printToErr();
+//        resultStream1.printToErr();
 //        resultStream2.print();
 //        resultStream3.print();
 //        resultStream4.print();
