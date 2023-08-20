@@ -31,3 +31,5 @@ db.orders.aggregate([
 {$or: [ { id: "GOTO_2023-07-28" }, { id: "GOTO_2023-07-26" } ]}
 {logo : /.*ttp.*/}
 {id: /.*20.*/}
+{companyid : /.*.*/}
+{windowstart: { $gt: 0 }}
