@@ -1,0 +1,10 @@
+# For Debugging purpose, run below:
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=8888
+
+# For Normal Installation, run below:
+pip install --upgrade pip
+pip install playwright
+playwright install
+
+# Run Recording:
+playwright codegen
