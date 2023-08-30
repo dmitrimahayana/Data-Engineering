@@ -1,0 +1,3 @@
+Spark version 3.4.1
+Scala version 2.12.17
+java version 1.8.0_202

@@ -1,0 +1,19 @@
+##Start Cassandra Server
+cd apache-cassandra-4.0.10/ && bin/cassandra
+
+##Start CLI
+cd apache-cassandra-4.0.10/ && bin/cqlsh localhost
+
+##Stop Cassandra
+ps auwx | grep cassandra
+sudo kill 27698
+
+#Create Keyspace
+CREATE KEYSPACE idxstock WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+DESCRIBE keyspaces;
+
+#Run Kafka-Connect-Sink-Cassandra
+connect-standalone.sh connect-standalone.properties cassandra.properties
+
+#Cassandra - Kafka CLI
+SELECT * FROM system_schema.columns WHERE keyspace_name = 'idxstock2' AND table_name = 'kafka_connect_offsets';

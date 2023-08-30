@@ -1,0 +1,8 @@
+./bin/pyspark --conf "spark.mongodb.read.connection.uri=mongodb://localhost:27017/kafka.stock-stream" --conf "spark.mongodb.write.connection.uri=mongodb://localhost:27017/kafka.predict-stock" --packages org.mongodb.spark:mongo-spark-connector:10.0.4
+			  
+./bin/pyspark --packages org.mongodb.spark:mongo-spark-connector:10.0.4
+
+spark-shell --conf "spark.mongodb.read.connection.uri=mongodb://localhost:27017/kafka.stock-stream" --conf "spark.mongodb.write.connection.uri=mongodb://localhost:27017/kafka.predict-stock" --packages org.mongodb.spark:mongo-spark-connector:10.0.4
+spark-shell --conf "spark.mongodb.read.connection.uri=mongodb://localhost:27017/kafka.stock-stream" --conf "spark.mongodb.write.connection.uri=mongodb://localhost:27017/kafka.predict-stock" --packages org.mongodb.spark:mongo-spark-connector_2.12:10.2.0
+spark-shell --conf "spark.mongodb.read.connection.uri=mongodb://localhost:27017/kafka.stock-stream" --conf "spark.mongodb.write.connection.uri=mongodb://localhost:27017/kafka.predict-stock" --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1
+

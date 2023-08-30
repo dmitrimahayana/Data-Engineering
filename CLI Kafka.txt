@@ -1,0 +1,227 @@
+##Start Kafka 1 Broker
+#THIS IS IMPORTANT!!!! Disable ipv6 due to WSL issue 
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
+##Start Kafka 1 Broker
+kafka-storage.sh random-uuid
+~/kafka_2.13-3.3.2/bin/kafka-storage.sh format -t UG62igbWR_2xGV0MRYXakg -c ~/kafka_2.13-3.3.2/config/kraft/server.properties
+~/kafka_2.13-3.3.2/bin/kafka-server-start.sh ~/kafka_2.13-3.3.2/config/kraft/server.properties
+
+##Start Kafka 2 Brokers
+kafka-storage.sh format -t bqfSbP7mRcmeQKdqwJXMcQ -c ~/kafka_cluster_setting/server_0.properties
+kafka-storage.sh format -t bqfSbP7mRcmeQKdqwJXMcQ -c ~/kafka_cluster_setting/server_1.properties
+kafka-server-start.sh ~/kafka_cluster_setting/server_0.properties
+kafka-server-start.sh ~/kafka_cluster_setting/server_1.properties
+
+##Start Docker Kafka 3 Broker
+Run Docker Compose file in Intellij or start from docker container
+
+####################################################################################################################################
+
+##Config Kafka Cluster
+#Broker Node 1
+node.id=1
+controller.quorum.voters=1@192.168.207.8:9093,2@192.168.207.8:9193
+listeners=PLAINTEXT://:9092,CONTROLLER://:9093
+advertised.listeners=PLAINTEXT://localhost:9092
+log.dirs=/tmp/kraft-combined-logs-log_0
+
+#Broker Node 2
+node.id=2
+controller.quorum.voters=1@192.168.207.8:9093,2@192.168.207.8:9193
+listeners=PLAINTEXT://:9192,CONTROLLER://:9193
+advertised.listeners=PLAINTEXT://localhost:9192
+log.dirs=/tmp/kraft-combined-logs-log_1
+
+####################################################################################################################################
+
+##Topic
+kafka-topics.sh --bootstrap-server localhost:9092 --list
+kafka-topics.sh --bootstrap-server localhost:9092 --create --partitions 6 --replication-factor 2 --topic streaming.goapi.idx.stock.json
+kafka-topics.sh --bootstrap-server localhost:9192 --describe --topic streaming.goapi.idx.stock.json
+kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic streaming.goapi.idx.stock.json
+
+##Start producer local
+kafka-console-producer.sh --bootstrap-server localhost:9092 --topic wikimedia.recentchange
+kafka-console-producer.sh --bootstrap-server localhost:9092 --topic wikimedia.recentchange --producer-property partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner
+
+##Start consumer local
+kafka-console-consumer.sh --bootstrap-server localhost:9192 --from-beginning --topic streaming.goapi.idx.stock.json
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group consumer-goapi-idx-stock
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --execute --topic group.stock
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --execute --topic group.company
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group consumer-goapi-idx-stock --reset-offsets --to-earliest --execute --topic join.stock.company
+
+##Start consumer conductor
+kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --from-beginning --topic demo_java
+kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server cluster.playground.cdkt.io:9092 --from-beginning --topic wikimedia.recentchange
+
+##Docker update schema policy to compact to avoid error in restarting schema server
+docker exec -ti kafka1 /usr/bin/kafka-configs --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --entity-type topics --entity-name _schemas --alter --add-config cleanup.policy=compact
+
+##Docker Topic
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --list
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --config cleanup.policy=compact --topic streaming.goapi.idx.stock.json
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --config cleanup.policy=compact --topic streaming.goapi.idx.companies.json
+docker exec -ti kafka1 /usr/bin/kafka-consumer-groups --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --execute --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic join.stock.company
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic group.stock
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic group.company
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic join.stock.company
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.companies.json
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.stock.json
+docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic ksqltablegroupstock
+
+
+##Docker Topic with RETENTION
+#RETENTION to keep how long the message will be kept after producer disconnected
+docker exec -ti kafka1 /usr/bin/kafka-configs --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --alter --entity-type topics --entity-name Dummy_Python --add-config retention.ms=5000
+
+##POC
+docker exec -ti kafka1 /usr/bin/kafka-console-producer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --topic Dummy_Python
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic Dummy_Python
+docker exec -ti kafka1 /usr/bin/kafka-consumer-groups --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --execute --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic Dummy_Python
+
+
+####################################################################################################################################
+
+##KSQLDB Docker Start CLI
+docker exec -it ksqldb-cli ksql http://ksqldb-server:9088
+
+##KSQLDB Start Local Server
+sudo /usr/bin/ksql-server-start /etc/ksqldb/ksql-server.properties
+
+##KSQLDB Start CLI
+sudo /usr/bin/ksql http://0.0.0.0:8088
+
+##KSQLDB Create Stream from Existing Topic
+#Set offset from latest to earliest to check the value
+SET 'auto.offset.reset'='earliest';
+SET 'auto.offset.reset'='latest';
+
+#Create Stock Stream with Avro Format
+CREATE OR REPLACE STREAM ksqlstreamstock (id VARCHAR, ticker VARCHAR, date VARCHAR, open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT)
+WITH (KAFKA_TOPIC='streaming.goapi.idx.stock.json', VALUE_FORMAT='AVRO', partitions=4);
+
+#Create Company Stream with Avro Format
+CREATE OR REPLACE STREAM ksqlstreamcompany (id VARCHAR, ticker VARCHAR, name VARCHAR, logo VARCHAR)
+WITH (kafka_topic='streaming.goapi.idx.companies.json', value_format='AVRO', partitions=4);
+
+#Query to check duplication of data
+SELECT ticker, COUNT(ticker) AS COUNTTICKER FROM ksqlstreamstock GROUP BY ticker EMIT CHANGES;
+SELECT * FROM ksqlstreamstock where id = 'GOTO_2023-07-28';
+SELECT * FROM ksqlstreamcompany where id = 'GOTO';
+ 
+#Create Stock Materialized View to Remove Duplication
+CREATE OR REPLACE TABLE ksqltablegroupstock AS
+	SELECT
+		id AS id,
+		AS_VALUE(id) AS stockid,
+		latest_by_offset(ticker) AS ticker,
+		latest_by_offset(date) AS date,
+		latest_by_offset(open) AS open, 
+		latest_by_offset(high) AS high, 
+		latest_by_offset(low) AS low, 
+		latest_by_offset(close) AS close, 
+		latest_by_offset(volume) AS volume
+	FROM ksqlstreamstock 
+	WINDOW TUMBLING (SIZE 1 MINUTE, RETENTION 3 DAYS, GRACE PERIOD 15 MINUTES)
+	GROUP BY id EMIT CHANGES;
+
+#Create Company Materialized View to Remove Duplication
+CREATE OR REPLACE TABLE ksqltablegroupcompany AS
+	SELECT
+		id AS id,
+		AS_VALUE(id) AS companyid,
+		latest_by_offset(ticker) AS ticker,
+		latest_by_offset(name) AS name,
+		latest_by_offset(logo) AS logo
+	FROM ksqlstreamcompany 
+	WINDOW TUMBLING (SIZE 1 MINUTE, RETENTION 3 DAYS, GRACE PERIOD 15 MINUTES)
+	GROUP BY id EMIT CHANGES;
+
+#Join Stock and Company Materialized Table
+CREATE OR REPLACE STREAM ksqlstreamjoinstockcompany AS
+	SELECT 
+		stream1.id AS id,
+		stream1.ticker AS ticker,
+		date AS date,
+		open AS open, 
+		high AS high, 
+		low AS low, 
+		close AS close, 
+		volume AS volume,
+		name AS name,
+		logo AS logo
+	FROM ksqlstreamstock stream1
+	INNER JOIN ksqlstreamcompany stream2
+	WITHIN 7 DAYS GRACE PERIOD 15 MINUTES
+	ON stream1.ticker = stream2.ticker EMIT CHANGES;
+	
+CREATE OR REPLACE TABLE ksqltablejoinstockcompany AS
+	SELECT 
+		id AS id,
+		AS_VALUE(id) AS stockid,
+		latest_by_offset(ticker) AS ticker,
+		latest_by_offset(date) AS date,
+		latest_by_offset(open) AS open, 
+		latest_by_offset(high) AS high, 
+		latest_by_offset(low) AS low, 
+		latest_by_offset(close) AS close, 
+		latest_by_offset(volume) AS volume,
+		latest_by_offset(name) AS name,
+		latest_by_offset(logo) AS logo
+	FROM ksqlstreamjoinstockcompany 
+	WINDOW TUMBLING (SIZE 1 MINUTE, RETENTION 3 DAYS, GRACE PERIOD 15 MINUTES)
+	GROUP BY id EMIT CHANGES;
+
+#Query to check duplication of data
+SELECT * FROM ksqltablegroupstock where id = 'GOTO_2023-07-28';
+SELECT * FROM ksqltablegroupcompany where ticker = 'GOTO';
+
+#Drop Table or Stream and Mention Delete Topic too if required to clean up existing topic
+DROP TABLE ksqltablejoinstockcompany DELETE TOPIC;
+DROP STREAM ksqlstreamjoinstockcompany;
+DROP TABLE ksqltablegroupstock DELETE TOPIC;
+DROP STREAM ksqlstreamstock;
+DROP TABLE ksqltablegroupcompany DELETE TOPIC;
+DROP STREAM ksqlstreamcompany;
+
+
+####################################################################################################################################
+
+Error:
+ERROR Exception in thread "main" java.lang JAVAClassNotFound
+Solution:
+Run/Debug/Configuration > Modify Options > Add Dependency with provided
+
+
+####################################################################################################################################
+
+##Kafka Schema API (using Postman)
+#Create Schema Name
+POST: http://localhost:8282/subjects/IDX-Stock/versions/
+Headers: Content-Type: application/vnd.schemaregistry.v1+json
+Body: 
+{ "schema":
+"{ \"type\": \"record\",\"name\": \"Stock\", \"fields\": [{\"name\": \"id\", \"type\": \"string\"}, {\"name\": \"ticker\", \"type\": \"string\"}, {\"name\": \"date\", \"type\": \"string\"}, {\"name\": \"open\", \"type\": \"double\"}, {\"name\": \"high\", \"type\": \"double\"}, {\"name\": \"low\", \"type\": \"double\"}, {\"name\": \"close\", \"type\": \"double\"}, {\"name\": \"volume\", \"type\": \"long\"}  ]}"
+}
+
+#Get Schema by name and version
+GET: http://localhost:8282/subjects/IDX-Stock/versions/
+GET: http://localhost:8282/subjects/IDX-Stock/versions/1
+
+#Update Schema Config to make it evolve everytime we update the Schema
+PUT - http://localhost:8282/config/IDX-Stock
+Headers: Content-Type: application/vnd.schemaregistry.v1+json
+Body:
+{
+   "compatibility": "BACKWARD_TRANSITIVE"
+}
+
+#Get Schema Config
+GET: http://localhost:8282/config/IDX-Stock
+
+#Delete Schema by name
+DELETE: http://localhost:8282/subjects/IDX-Company/versions/8

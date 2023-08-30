@@ -1,0 +1,18 @@
+##Spark Start Master
+start-master.sh -h 192.168.207.8 -p 7777
+
+##Spark Start Slave
+start-worker.sh spark://192.168.207.8:7777 -m 2g -c 6
+
+##When Worker is not showing in http://localhost:8080/ ,then perform this
+#Remove SSH with the following command:
+sudo apt-get remove openssh-client openssh-server
+#Install SSH again with:
+sudo apt-get install openssh-client openssh-server
+
+##Deploying PySpark in Linux
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.3.2 /mnt/d/00\ Project/00\ My\ Project/IdeaProjects/PyStocksPrediction/StocksPrediction.py
+
+##Deploying PySpark in Windows
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.13:3.3.2 D:\00 Project\00 My Project\IdeaProjects\PyStocksPrediction\StocksPrediction.py
+spark-submit --packages io.id.stock.analysis.StocksPrediction /mnt/d/00\ Project/00\ My\ Project/IdeaProjects/ID-Stock-Analysis/out/artifacts/ID_Stock_Analysis_main_jar

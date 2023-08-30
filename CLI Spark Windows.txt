@@ -1,0 +1,11 @@
+#Spark Location:
+D:\Program Files\spark-3.2.2-bin-hadoop3.2\bin
+
+#CLI Start Master and check 127.0.0.1:8080 for SPARK_IP:PORT
+spark-class org.apache.spark.deploy.master.Master
+
+#CLI Start Worker
+spark-class org.apache.spark.deploy.worker.Worker spark://SPARK_IP:PORT
+
+#Make sure Scala version match with Spark Scala version
+#Make sure dependencies Scala met with Spark and rebuild/reload SBT
