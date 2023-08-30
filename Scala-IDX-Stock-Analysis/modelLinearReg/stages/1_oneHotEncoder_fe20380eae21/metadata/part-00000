@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1689009079928,"sparkVersion":"3.4.1","uid":"oneHotEncoder_fe20380eae21","paramMap":{"inputCol":"tickerIndex","outputCol":"tickerOneHot"},"defaultParamMap":{"handleInvalid":"error","outputCol":"oneHotEncoder_fe20380eae21__output","dropLast":true}}
