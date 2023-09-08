@@ -1,0 +1,26 @@
+import jdk.internal.dynalink.linker.LinkerServices
+
+plugins {
+    id 'application'
+//    id 'java'
+}
+
+group = 'org.solution'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.microsoft.playwright:playwright:1.36.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.1'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+}
+
+//This is only for test generator
+//Run This: ./gradlew run --args="codegen https://www.cermati.com/karir"
+application {
+    mainClass.set("com.microsoft.playwright.CLI")
+}
+
