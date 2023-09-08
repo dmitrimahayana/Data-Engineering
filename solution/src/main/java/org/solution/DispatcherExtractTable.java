@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -16,24 +17,26 @@ public class DispatcherExtractTable {
     public static List<DispatcherCollection> ScrapeTable(Page page) {
         System.out.println("Start Table Scraping");
         int counterPage = 1;
-        int counterURL = 0;
+        int counterURL = 1;
         List<DispatcherCollection> collectionList = new ArrayList<>();
 
         Locator currentPage = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(String.valueOf(counterPage)));
         assertThat(currentPage).isVisible();
-        while (counterPage < 10) {
-//        while (true) {
+        while (true) {
             try {
                 Locator listJob = page.locator("css=.page-job-list-wrapper");
                 for (int i = 0; i < listJob.count(); i++) {
                     String fullText = listJob.nth(i).textContent();
-                    String selector = fullText
+                    String rawSelector = fullText
                             .replace(".", "\\.")
                             .replace(",", "\\,")
                             .replace("(", "\\(")
                             .replace(")", "\\)")
-                            .replace("/", "\\/");
-                    DispatcherCollection collection = new DispatcherCollection(counterURL, fullText, selector);
+                            .replace("/", "\\/")
+                            .replace("-", "\\-");
+                    String[] newSelector = rawSelector.split("·");
+                    System.out.println(counterURL + " -- " + newSelector[0].trim());
+                    DispatcherCollection collection = new DispatcherCollection(counterURL, fullText, newSelector[0].trim(), "");
                     collectionList.add(collection);
                     counterURL = counterURL + 1;
 
@@ -41,7 +44,7 @@ public class DispatcherExtractTable {
 //                    Page newPage = page.waitForPopup(() -> {
 //                        page.locator("div").filter(
 //                                        new Locator.FilterOptions().setHasText(
-//                                                Pattern.compile("^" + selector + "$")))
+//                                                Pattern.compile("^" + collection.selector + "$")))
 //                                .getByRole(AriaRole.LINK)
 //                                .click();
 //                    });
