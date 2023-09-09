@@ -9,13 +9,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.opentest4j.AssertionFailedError;
 
 import java.io.*;
-import java.lang.reflect.Type;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static java.util.Arrays.asList;
 
 public class PerformerExtractData extends Thread {
 
@@ -68,8 +65,10 @@ public class PerformerExtractData extends Thread {
             }
 
             Boolean jsonStatus = createJsonFile(performerOutputPath, collectionList);
+            if (jsonStatus){
+                System.out.println("Worker: " + worker + " done and completed: " + jobNumber + " scraping jobs");
+            }
         }
-        System.out.println("Worker: " + worker + " done and completed: " + jobNumber + " scraping jobs");
     }
 
     private static Boolean createJsonFile(String performerOutputPath, List<PerformerCollection> collectionList){
