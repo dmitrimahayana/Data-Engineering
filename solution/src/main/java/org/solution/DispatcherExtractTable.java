@@ -9,44 +9,51 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 public class DispatcherExtractTable {
-    public static List<DispatcherCollection> ScrapeTable(Page page) {
+    public static List<DispatcherCollection> ScrapeTable(Page page, String errorFolder) {
         System.out.println("Start Table Scraping");
         int counterPage = 1;
-        int counterURL = 0;
+        int counterURL = 1;
         List<DispatcherCollection> collectionList = new ArrayList<>();
 
         Locator currentPage = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(String.valueOf(counterPage)));
         assertThat(currentPage).isVisible();
-        while (counterPage < 10) {
-//        while (true) {
+
+        Locator listDepartment = page.locator("//select[@id='job-department'] //option");
+        String[] departments = new String[listDepartment.count()];
+        int counterDept = 0;
+        for (Locator loc : listDepartment.all()) {
+            departments[counterDept] = loc.textContent();
+            counterDept = counterDept + 1;
+        }
+
+        while (true) {
             try {
                 Locator listJob = page.locator("css=.page-job-list-wrapper");
                 for (int i = 0; i < listJob.count(); i++) {
                     String fullText = listJob.nth(i).textContent();
-                    String selector = fullText
+                    String[] rawSelector = fullText.split("·");
+                    String newSelector = rawSelector[0]
                             .replace(".", "\\.")
                             .replace(",", "\\,")
                             .replace("(", "\\(")
                             .replace(")", "\\)")
-                            .replace("/", "\\/");
-                    DispatcherCollection collection = new DispatcherCollection(counterURL, fullText, selector);
+                            .replace("/", "\\/")
+                            .replace("-", "\\-");
+                    String departmentName = "";
+                    for (String department : departments) {
+                        if (newSelector.contains(department)) {
+                            departmentName = department;
+                        }
+                    }
+                    System.out.println(counterURL + " --- " + newSelector.trim() + " --- " + departmentName);
+                    DispatcherCollection collection = new DispatcherCollection(counterURL, fullText, newSelector.trim(), departmentName);
                     collectionList.add(collection);
                     counterURL = counterURL + 1;
-
-////                    Test Click Apply !!!
-//                    Page newPage = page.waitForPopup(() -> {
-//                        page.locator("div").filter(
-//                                        new Locator.FilterOptions().setHasText(
-//                                                Pattern.compile("^" + selector + "$")))
-//                                .getByRole(AriaRole.LINK)
-//                                .click();
-//                    });
-//                    newPage.close();
-
                 }
 
                 counterPage = counterPage + 1;
@@ -55,12 +62,12 @@ public class DispatcherExtractTable {
                 nextPage.click();
             } catch (PlaywrightException e) {
                 // Handle the exception that occurred during the operation
-                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("error.png")));
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(errorFolder + "playwright_error.png")));
                 System.out.println("PlaywrightException: " + e.getMessage());
                 break;
             } catch (AssertionFailedError e) {
                 // Handle AssertionFailedError if the locator is not visible
-                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("error.png")));
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(errorFolder + "assert_error.png")));
                 System.out.println("AssertionFailedError: " + e.getMessage());
                 break;
             }
