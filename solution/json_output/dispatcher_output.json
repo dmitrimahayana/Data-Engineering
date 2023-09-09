@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "fullText": "Data EngineerFull-timeEngineeringIndodanaJakartaApply",
+    "selector": "Data EngineerFull\\-timeEngineeringIndodanaJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 2,
+    "fullText": "Legal AssociateFull-timePeople OperationsCermati.comJakartaApply",
+    "selector": "Legal AssociateFull\\-timePeople OperationsCermati\\.comJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 3,
+    "fullText": "Sales Promoter LeaderFull-timeBusiness OperationsIndodanaSemarangApply",
+    "selector": "Sales Promoter LeaderFull\\-timeBusiness OperationsIndodanaSemarangApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 4,
+    "fullText": "Sales Promoter Leader (Jabodetabek)ContractBusiness OperationsIndodanaJakartaApply",
+    "selector": "Sales Promoter Leader \\(Jabodetabek\\)ContractBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 5,
+    "fullText": "Insurance Business Development - Employee BenefitFull-timeBusiness DevelopmentCermati.comCentral JakartaApply",
+    "selector": "Insurance Business Development \\- Employee BenefitFull\\-timeBusiness DevelopmentCermati\\.comCentral JakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 6,
+    "fullText": "Field CollectionContractBusiness OperationsIndodanaJakartaApply",
+    "selector": "Field CollectionContractBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 7,
+    "fullText": "TelemarketingContractBusiness OperationsCermati.comjakartaApply",
+    "selector": "TelemarketingContractBusiness OperationsCermati\\.comjakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 8,
+    "fullText": "Software EngineerFull-timeEngineeringCermati.comJakartaApply",
+    "selector": "Software EngineerFull\\-timeEngineeringCermati\\.comJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 9,
+    "fullText": "Merchant Relation Officer (Bali)ContractBusiness DevelopmentIndodanaDenpasarApply",
+    "selector": "Merchant Relation Officer \\(Bali\\)ContractBusiness DevelopmentIndodanaDenpasarApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 10,
+    "fullText": "Business Development Associate (Jawa Tengah)ContractBusiness DevelopmentIndodanaYogyakartaApply",
+    "selector": "Business Development Associate \\(Jawa Tengah\\)ContractBusiness DevelopmentIndodanaYogyakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 11,
+    "fullText": "Senior Litigation OfficerFull-timePeople OperationsCermati.comJakartaApply",
+    "selector": "Senior Litigation OfficerFull\\-timePeople OperationsCermati\\.comJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 12,
+    "fullText": "Field Collection - Kabupaten TangerangContractBusiness OperationsIndodanaTangerangApply",
+    "selector": "Field Collection \\- Kabupaten TangerangContractBusiness OperationsIndodanaTangerangApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 13,
+    "fullText": "Health Insurance Claim HeadFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Health Insurance Claim HeadFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 14,
+    "fullText": "District Sales Manager - SemarangFull-timeBusiness DevelopmentCermati.comSemarangApply",
+    "selector": "District Sales Manager \\- SemarangFull\\-timeBusiness DevelopmentCermati\\.comSemarangApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 15,
+    "fullText": "Internal Audit (Lead/Manager)Full-timePeople OperationsIndodanaJakartaApply",
+    "selector": "Internal Audit \\(Lead\\/Manager\\)Full\\-timePeople OperationsIndodanaJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 16,
+    "fullText": "District Sales Manager - CirebonFull-timeBusiness DevelopmentCermati.comCirebonApply",
+    "selector": "District Sales Manager \\- CirebonFull\\-timeBusiness DevelopmentCermati\\.comCirebonApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 17,
+    "fullText": "Desk CollectionContractBusiness OperationsIndodanaJakartaApply",
+    "selector": "Desk CollectionContractBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 18,
+    "fullText": "Anti Fraud AnalystFull-timeBusiness OperationsIndodanaJakartaApply",
+    "selector": "Anti Fraud AnalystFull\\-timeBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 19,
+    "fullText": "Operations StrategistFull-timeStrategic OperationsIndodanaJakartaApply",
+    "selector": "Operations StrategistFull\\-timeStrategic OperationsIndodanaJakartaApply",
+    "department": "Strategic Operations"
+  },
+  {
+    "id": 20,
+    "fullText": "Field Collection ManagerFull-timeBusiness OperationsIndodanaWest JakartaApply",
+    "selector": "Field Collection ManagerFull\\-timeBusiness OperationsIndodanaWest JakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 21,
+    "fullText": "Team Leader Field CollectionContractBusiness OperationsIndodanaJakartaApply",
+    "selector": "Team Leader Field CollectionContractBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 22,
+    "fullText": "Business Development Manager - Employee LoanFull-timeBusiness DevelopmentIndodanaJakartaApply",
+    "selector": "Business Development Manager \\- Employee LoanFull\\-timeBusiness DevelopmentIndodanaJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 23,
+    "fullText": "Compliance (Senior Associate / Manager)Full-timePeople OperationsCermati.comJakartaApply",
+    "selector": "Compliance \\(Senior Associate \\/ Manager\\)Full\\-timePeople OperationsCermati\\.comJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 24,
+    "fullText": "Insurance Partnership ManagerFull-timeBusiness DevelopmentCermati.comCentral JakartaApply",
+    "selector": "Insurance Partnership ManagerFull\\-timeBusiness DevelopmentCermati\\.comCentral JakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 25,
+    "fullText": "Insurance Technical ManagerFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Insurance Technical ManagerFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 26,
+    "fullText": "Head Of Placement Insurance - Employee BenefitFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Head Of Placement Insurance \\- Employee BenefitFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 27,
+    "fullText": "Head of Claim and PlacementFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Head of Claim and PlacementFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 28,
+    "fullText": "Lead Data EngineerFull-timeEngineeringIndodanaJakartaApply",
+    "selector": "Lead Data EngineerFull\\-timeEngineeringIndodanaJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 29,
+    "fullText": "Business Development ManagerFull-timeBusiness DevelopmentIndodanaJakartaApply",
+    "selector": "Business Development ManagerFull\\-timeBusiness DevelopmentIndodanaJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 30,
+    "fullText": "Internal Audit StaffFull-timePeople OperationsIndodanaJakartaApply",
+    "selector": "Internal Audit StaffFull\\-timePeople OperationsIndodanaJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 31,
+    "fullText": "Field Collection-BandungContractBusiness OperationsIndodanaBandungApply",
+    "selector": "Field Collection\\-BandungContractBusiness OperationsIndodanaBandungApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 32,
+    "fullText": "Field Collection-SurabayaContractBusiness OperationsIndodanaSurabayaApply",
+    "selector": "Field Collection\\-SurabayaContractBusiness OperationsIndodanaSurabayaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 33,
+    "fullText": "Legal (Senior Associate / Manager)Full-timePeople OperationsIndodanaJakartaApply",
+    "selector": "Legal \\(Senior Associate \\/ Manager\\)Full\\-timePeople OperationsIndodanaJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 34,
+    "fullText": "Business Development Associate (Bali)ContractBusiness DevelopmentIndodanaBaliApply",
+    "selector": "Business Development Associate \\(Bali\\)ContractBusiness DevelopmentIndodanaBaliApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 35,
+    "fullText": "Government Relations SpecialistFull-timePeople OperationsCermati.comJakartaApply",
+    "selector": "Government Relations SpecialistFull\\-timePeople OperationsCermati\\.comJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 36,
+    "fullText": "IT Internal AuditFull-timePeople OperationsCermati.comJakartaApply",
+    "selector": "IT Internal AuditFull\\-timePeople OperationsCermati\\.comJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 37,
+    "fullText": "IT Security \u0026 GRC (Lead/Manager)Full-timePeople OperationsCermati.comJakartaApply",
+    "selector": "IT Security \u0026 GRC \\(Lead\\/Manager\\)Full\\-timePeople OperationsCermati\\.comJakartaApply",
+    "department": "People Operations"
+  },
+  {
+    "id": 38,
+    "fullText": "Merchant Relation Officer (Yogyakarta)ContractBusiness DevelopmentIndodanaYogyakartaApply",
+    "selector": "Merchant Relation Officer \\(Yogyakarta\\)ContractBusiness DevelopmentIndodanaYogyakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 39,
+    "fullText": "Merchant Relation Officer (Semarang)ContractBusiness DevelopmentIndodanaSemarangApply",
+    "selector": "Merchant Relation Officer \\(Semarang\\)ContractBusiness DevelopmentIndodanaSemarangApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 40,
+    "fullText": "Business Development Manager Insurance (All Levels)ContractBusiness DevelopmentCermati.comCentral JakartaApply",
+    "selector": "Business Development Manager Insurance \\(All Levels\\)ContractBusiness DevelopmentCermati\\.comCentral JakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 41,
+    "fullText": "District Sales ManagerFull-timeBusiness DevelopmentIndodanaMakassarApply",
+    "selector": "District Sales ManagerFull\\-timeBusiness DevelopmentIndodanaMakassarApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 42,
+    "fullText": "Offline Promoter (Jabodetabek)ContractBusiness OperationsIndodanaJakartaApply",
+    "selector": "Offline Promoter \\(Jabodetabek\\)ContractBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 43,
+    "fullText": "Offline Promoter (Jawa Timur)ContractBusiness OperationsIndodanaEast JavaApply",
+    "selector": "Offline Promoter \\(Jawa Timur\\)ContractBusiness OperationsIndodanaEast JavaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 44,
+    "fullText": "Head of Marketing - General InsuranceFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Head of Marketing \\- General InsuranceFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 45,
+    "fullText": "Business Development Manager - Employee BenefitFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Business Development Manager \\- Employee BenefitFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 46,
+    "fullText": "General Insurance MarketingFull-timeBusiness DevelopmentCermati.comCentral JakartaApply",
+    "selector": "General Insurance MarketingFull\\-timeBusiness DevelopmentCermati\\.comCentral JakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 47,
+    "fullText": "Product Owner (Entry, Mid and Senior  Levels)Full-timeProductCermati.comJakartaApply",
+    "selector": "Product Owner \\(Entry\\, Mid and Senior  Levels\\)Full\\-timeProductCermati\\.comJakartaApply",
+    "department": "Product"
+  },
+  {
+    "id": 48,
+    "fullText": "Product Owner (Entry, Mid and Senior Levels Available) .Full-timeProductIndodanaJakartaApply",
+    "selector": "Product Owner \\(Entry\\, Mid and Senior Levels Available\\) \\.Full\\-timeProductIndodanaJakartaApply",
+    "department": "Product"
+  },
+  {
+    "id": 49,
+    "fullText": "Key Account SupervisorFull-timeBusiness DevelopmentIndodanaJakartaApply",
+    "selector": "Key Account SupervisorFull\\-timeBusiness DevelopmentIndodanaJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 50,
+    "fullText": "Lead Data Engineer- BangaloreFull-timeEngineeringCermati.comBengaluruApply",
+    "selector": "Lead Data Engineer\\- BangaloreFull\\-timeEngineeringCermati\\.comBengaluruApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 51,
+    "fullText": "Lead SEIT (Lead Software Engineer in Test)Full-timeEngineeringCermati.comBengaluruApply",
+    "selector": "Lead SEIT \\(Lead Software Engineer in Test\\)Full\\-timeEngineeringCermati\\.comBengaluruApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 52,
+    "fullText": "Senior Software Quality AssuranceFull-timeEngineeringCermati.comJakartaApply",
+    "selector": "Senior Software Quality AssuranceFull\\-timeEngineeringCermati\\.comJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 53,
+    "fullText": "Senior Software Quality Assurance .Full-timeEngineeringIndodanaJakartaApply",
+    "selector": "Senior Software Quality Assurance \\.Full\\-timeEngineeringIndodanaJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 54,
+    "fullText": "Lead Software Quality AssuranceFull-timeEngineeringCermati.comJakartaApply",
+    "selector": "Lead Software Quality AssuranceFull\\-timeEngineeringCermati\\.comJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 55,
+    "fullText": "Lead Software Quality Assurance .Full-timeEngineeringIndodanaJakartaApply",
+    "selector": "Lead Software Quality Assurance \\.Full\\-timeEngineeringIndodanaJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 56,
+    "fullText": "Telemarketing BorrowerFull-timeDigital Marketing and ContentIndodanaJakartaApply",
+    "selector": "Telemarketing BorrowerFull\\-timeDigital Marketing and ContentIndodanaJakartaApply",
+    "department": "Digital Marketing and Content"
+  },
+  {
+    "id": 57,
+    "fullText": "Car Insurance TelemarketingContractBusiness OperationsCermati.comJakartaApply",
+    "selector": "Car Insurance TelemarketingContractBusiness OperationsCermati\\.comJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 58,
+    "fullText": "Data Engineer - IndiaFull-timeEngineeringCermati.comBengaluruApply",
+    "selector": "Data Engineer \\- IndiaFull\\-timeEngineeringCermati\\.comBengaluruApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 59,
+    "fullText": "Field Collection - SemarangContractBusiness OperationsIndodanaSemarangApply",
+    "selector": "Field Collection \\- SemarangContractBusiness OperationsIndodanaSemarangApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 60,
+    "fullText": "Software Engineer In Test Automation TestingFull-timeEngineeringIndodanaJakartaApply",
+    "selector": "Software Engineer In Test Automation TestingFull\\-timeEngineeringIndodanaJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 61,
+    "fullText": "Business Development SupportContractBusiness DevelopmentCermati.comCentral JakartaApply",
+    "selector": "Business Development SupportContractBusiness DevelopmentCermati\\.comCentral JakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 62,
+    "fullText": "Health Insurance TelemarketingContractBusiness OperationsCermati.comJakartaApply",
+    "selector": "Health Insurance TelemarketingContractBusiness OperationsCermati\\.comJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 63,
+    "fullText": "SEIT ( Software Engineer in Test)Full-timeEngineeringCermati.comBengaluruApply",
+    "selector": "SEIT \\( Software Engineer in Test\\)Full\\-timeEngineeringCermati\\.comBengaluruApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 64,
+    "fullText": "Offline Promoter (Bali)ContractBusiness OperationsIndodanaDenpasarApply",
+    "selector": "Offline Promoter \\(Bali\\)ContractBusiness OperationsIndodanaDenpasarApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 65,
+    "fullText": "Offline Promoter (Jawa Tengah)ContractBusiness OperationsIndodanaCentral JavaApply",
+    "selector": "Offline Promoter \\(Jawa Tengah\\)ContractBusiness OperationsIndodanaCentral JavaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 66,
+    "fullText": "Offline Promoter (Jawa Barat)ContractBusiness OperationsIndodanaWest JavaApply",
+    "selector": "Offline Promoter \\(Jawa Barat\\)ContractBusiness OperationsIndodanaWest JavaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 67,
+    "fullText": "Software Engineer (Associate/Senior/Principal Position)Full-timeEngineeringIndodanaJakartaApply",
+    "selector": "Software Engineer \\(Associate\\/Senior\\/Principal Position\\)Full\\-timeEngineeringIndodanaJakartaApply",
+    "department": "Engineering"
+  },
+  {
+    "id": 68,
+    "fullText": "Public Relations LeadFull-timeDigital Marketing and ContentCermati.comCentral JakartaApply",
+    "selector": "Public Relations LeadFull\\-timeDigital Marketing and ContentCermati\\.comCentral JakartaApply",
+    "department": "Digital Marketing and Content"
+  },
+  {
+    "id": 69,
+    "fullText": "CEO Office - Special ProjectsFull-timeStrategic OperationsCermati.comJakartaApply",
+    "selector": "CEO Office \\- Special ProjectsFull\\-timeStrategic OperationsCermati\\.comJakartaApply",
+    "department": "Strategic Operations"
+  },
+  {
+    "id": 70,
+    "fullText": "Head of Marketing - Employee BenefitFull-timeBusiness DevelopmentCermati.comJakartaApply",
+    "selector": "Head of Marketing \\- Employee BenefitFull\\-timeBusiness DevelopmentCermati\\.comJakartaApply",
+    "department": "Business Development"
+  },
+  {
+    "id": 71,
+    "fullText": "Retail Credit Risk Analytics \u0026 Modelling ManagerFull-timeBusiness OperationsIndodanaJakartaApply",
+    "selector": "Retail Credit Risk Analytics \u0026 Modelling ManagerFull\\-timeBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 72,
+    "fullText": "Head of ComplianceFull-timeBusiness OperationsIndodanaJakartaApply",
+    "selector": "Head of ComplianceFull\\-timeBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 73,
+    "fullText": "Supervisor Field CollectionFull-timeBusiness OperationsIndodanaJakartaApply",
+    "selector": "Supervisor Field CollectionFull\\-timeBusiness OperationsIndodanaJakartaApply",
+    "department": "Business Operations"
+  },
+  {
+    "id": 74,
+    "fullText": "Product Management - People Lead (Senior/Head/VP Level)Full-timeProductCermati.comSingaporeApply",
+    "selector": "Product Management \\- People Lead \\(Senior\\/Head\\/VP Level\\)Full\\-timeProductCermati\\.comSingaporeApply",
+    "department": "Product"
+  },
+  {
+    "id": 75,
+    "fullText": "Senior UI/UX DesignerFull-timeProductCermati.comCentral JakartaApply",
+    "selector": "Senior UI\\/UX DesignerFull\\-timeProductCermati\\.comCentral JakartaApply",
+    "department": "Product"
+  }
+]
