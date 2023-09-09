@@ -110,6 +110,8 @@ public class solution {
             runPerformer(DISP_PERF_FOLDER + PERFORMER_OUTPUT);
             Set<String> uniqueDeptName = getAllDepartment(DISP_PERF_FOLDER + DISPATCHER_OUTPUT);
             ExtractData(uniqueDeptName, DISP_PERF_FOLDER + FINAL_OUTPUT, DISP_PERF_FOLDER, PERFORMER_OUTPUT);
+
+//          Final output solution.json will be stored under this folder ./json_output/
         }
     }
 }

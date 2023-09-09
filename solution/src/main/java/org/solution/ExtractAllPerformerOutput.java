@@ -71,7 +71,7 @@ public class ExtractAllPerformerOutput {
                 String departmentName = entry.getKey();
                 JsonElement jobsJsonArray = entry.getValue();
                 int numberOfJobs = jobsJsonArray.getAsJsonArray().size();
-                System.out.println("Department Name: " + departmentName + " with Total Jobs: " + numberOfJobs);
+                System.out.println("Department Name: " + departmentName + " --- Total Jobs: " + numberOfJobs);
                 departmentCount++;
                 allJobsCount = allJobsCount + numberOfJobs;
             }
