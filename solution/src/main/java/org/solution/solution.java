@@ -1,105 +1,93 @@
 package org.solution;
 
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.Array;
+import java.io.*;
+import java.lang.reflect.Type;
 import java.util.*;
-import java.util.regex.Pattern;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.opentest4j.AssertionFailedError;
-import sun.awt.windows.WPrinterJob;
-import sun.security.util.Length;
-
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static java.util.Arrays.asList;
-import static org.json.simple.JSONValue.parse;
 import static org.solution.ReadAllPerformerOutput.readAllPerformerOutput;
 
 public class solution {
 
-//    private static final Queue<String> queue = new LinkedList<>();
     private static final Queue<DispatcherCollection> queue = new LinkedList<>();
-    private static Integer workerNumber;
+    private static final String DISPATCHER_OUTPUT = "dispatcher_output.json";
+    private static final int WORKER_NUMBER = 8;
+    private static final String DISP_PERF_FOLDER = "./json/";
+    private static final String ERROR_FOLDER = "./screenshot/";
+    private static final String PERFORMER_OUTPUT = "[worker]_performer_output.json";
+    private static final String FINAL_OUTPUT = "solution.json";
 
-    public static List<DispatcherCollection> runDispatcher(Page page, String dispatcherFileName) {
-        List<DispatcherCollection> collectionList = DispatcherExtractTable.ScrapeTable(page);
-//        for (DispatcherCollection item : collectionList) {
-//            System.out.println(item.id + " --- " + item.selector);
-//        }
+    public static void runDispatcher(Page page, String dispatcherFilePath) {
+        List<DispatcherCollection> collectionList = DispatcherExtractTable.ScrapeTable(page, ERROR_FOLDER);
 
-        try {
-            // Create an ObjectMapper
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            // Serialize the collectionList to a JSON file
-            objectMapper.writeValue(new File(dispatcherFileName), collectionList);
-            System.out.println("Data written to " + dispatcherFileName);
+        try (Writer writer = new FileWriter(dispatcherFilePath)) {
+            Gson gson = new  GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(collectionList, new TypeToken<List<DispatcherCollection>>() {}.getType(), writer);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
-        return collectionList;
     }
 
-    public static void createQueue(List<DispatcherCollection> collectionList, String filename) throws IOException {
-        for (DispatcherCollection item : collectionList) {
-            queue.offer(new DispatcherCollection(item.id, item.fullText, item.selector, item.getDepartment()));
-            System.out.println("Add to Queue: " + item.id + " --- " + item.selector);
+    public static void createQueue(String dispatcherFilePath) {
+        Gson gson = new Gson();
+        try (Reader reader = new FileReader(dispatcherFilePath)) {
+            Type dispatcherCollectionType = new TypeToken<ArrayList<DispatcherCollection>>(){}.getType();
+            List<DispatcherCollection> collectionList = gson.fromJson(reader, dispatcherCollectionType);
+            for(DispatcherCollection item : collectionList) {
+            queue.offer(new DispatcherCollection(item.id, item.fullText, item.selector, item.department));
+            System.out.println("Add to Queue: " + item.id + " --- " + item.fullText + " --- " + item.selector + " --- " + item.department);
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         }
-//        JSONArray listJson = (JSONArray) parse(new FileReader(filename));
-//        for (Object objJson : listJson) {
-//            JSONObject collection = (JSONObject) objJson;
-//
-//            Long id = (Long) collection.get("id");
-//            String fullText = (String) collection.get("fullText");
-//            String selector = (String) collection.get("selector");
-//            queue.add(selector);
-//            System.out.println("Add to Queue: " + id + " --- " + fullText + " --- " + selector);
-//        }
     }
 
-    public static void runPerformer(String performerOutputFile) throws InterruptedException {
+    public static void runPerformer(String PerformerOutputPath){
         List<Thread> threads = new ArrayList<>();
-        for (Integer worker = 1; worker <= workerNumber; worker++) {
-            String newPerformerOutputFile = worker + "_" + performerOutputFile;
-            Thread thread = new PerformerExtractData(worker, queue, newPerformerOutputFile);
+        for (int worker = 1; worker <= WORKER_NUMBER; worker++) {
+            String newPerformerOutputPath = PerformerOutputPath.replace("[worker]", String.valueOf(worker));
+            Thread thread = new PerformerExtractData(worker, queue, newPerformerOutputPath);
             threads.add(thread);
             // Start thread
             thread.start();
         }
 
-        // Wait for all threads to finish
-        for (Thread thread : threads) {
-            thread.join();
+        try {
+            // Wait for all threads to finish
+            for (Thread thread : threads) {
+                thread.join();
+            }
+        } catch (InterruptedException e){
+            throw new RuntimeException(e);
         }
         System.out.println("All workers have finished...");
+    }
+
+    public static Set<String> getAllDepartment(String dispatcherFilePath){
+        Set<String> uniqueDepartments = new HashSet<>();
+        try (FileReader fileReader = new FileReader(dispatcherFilePath)) {
+            JsonArray jsonArray = JsonParser.parseReader(fileReader).getAsJsonArray();
+
+            // Iterate through the JSON array and extract departments
+            for (JsonElement element : jsonArray) {
+                String department = element.getAsJsonObject().get("department").getAsString();
+                uniqueDepartments.add(department);
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return uniqueDepartments;
     }
 
     public static void main(String[] args) {
         // For Debugging process, run cmd below:
         // "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=8888
-        boolean debugRun = true;
-
-        // Define dispatcher output in json format
-        String DISPATCHER_OUTPUT = "dispatcher_output.json";
-
-        // Define performer worker number
-        workerNumber = 8;
-
-        // Define Performer output in json format
-        String PERFORMER_OUTPUT = "performer_output.json";
-        String FINAL_OUTPUT = "solution.json";
+        boolean debugRun = false;
 
         try (Playwright playwright = Playwright.create()) {
             Page page = null;
@@ -113,16 +101,13 @@ public class solution {
                 page = defaultContext.pages().get(0);
             }
 
-            page.navigate("https://www.cermati.com/karir");
-            page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("View All Jobs").setExact(true)).click();
-            List<DispatcherCollection> collectionList = runDispatcher(page, DISPATCHER_OUTPUT);
-            createQueue(collectionList, DISPATCHER_OUTPUT);
-            runPerformer(PERFORMER_OUTPUT);
-//            readAllPerformerOutput(FINAL_OUTPUT);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+//            page.navigate("https://www.cermati.com/karir");
+//            page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("View All Jobs").setExact(true)).click();
+//            runDispatcher(page, DISP_PERF_FOLDER + DISPATCHER_OUTPUT);
+//            createQueue(DISP_PERF_FOLDER + DISPATCHER_OUTPUT);
+//            runPerformer(DISP_PERF_FOLDER + PERFORMER_OUTPUT);
+            Set<String> uniqueDeptName = getAllDepartment(DISP_PERF_FOLDER + DISPATCHER_OUTPUT);
+            readAllPerformerOutput(uniqueDeptName, DISP_PERF_FOLDER + FINAL_OUTPUT, DISP_PERF_FOLDER);
         }
     }
 }

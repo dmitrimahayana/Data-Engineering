@@ -80,7 +80,7 @@ public class PerformerTest {
                     jobQualification[i] = listJobQualification.nth(i).textContent().replace("\u00a0", "").replace("•", "").trim();
                 }
             }
-            PerformerCollection collectionJob = new PerformerCollection(jobTitle, jobLocation, jobDescription, jobQualification, jobType, jobPostedBy);
+            PerformerCollection collectionJob = new PerformerCollection("", jobTitle, jobLocation, jobDescription, jobQualification, jobType, jobPostedBy);
 
             System.out.println("title: "+collectionJob.title);
             System.out.println("location: "+collectionJob.location);

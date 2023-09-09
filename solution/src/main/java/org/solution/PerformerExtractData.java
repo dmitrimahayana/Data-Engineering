@@ -1,15 +1,15 @@
 package org.solution;
 
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
 import org.apache.commons.lang3.StringUtils;
 import org.opentest4j.AssertionFailedError;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -21,14 +21,14 @@ public class PerformerExtractData extends Thread {
 
     private final Integer worker;
     private final Queue<DispatcherCollection> queue;
-    private final String performerOutputFile;
+    private final String performerOutputPath;
     private Integer currentPage;
     private Integer jobNumber;
 
-    public PerformerExtractData(Integer worker, Queue<DispatcherCollection> queue, String performerOutputFile) {
+    public PerformerExtractData(Integer worker, Queue<DispatcherCollection> queue, String performerOutputPath) {
         this.worker = worker;
         this.queue = queue;
-        this.performerOutputFile = performerOutputFile;
+        this.performerOutputPath = performerOutputPath;
         this.currentPage = 1;
         this.jobNumber = 0;
     }
@@ -41,19 +41,19 @@ public class PerformerExtractData extends Thread {
             Page mainPage = browser.newPage();
             mainPage.navigate("https://www.cermati.com/karir");
             mainPage.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("View All Jobs").setExact(true)).click();
+
             while (true) {
-                // Check if the queue is empty
                 if (queue.peek() == null) {
-//                    System.out.println("Worker: " + worker + " Queue is empty!!!");
                     break;
                 } else {
                     // Remove elements from the queue
                     DispatcherCollection elementQueue = queue.poll();
                     String selector = elementQueue.selector;
+                    String departmentName = elementQueue.department;
                     jobNumber = jobNumber + 1;
                     try {
                         Page jobPage = navigateJob(worker, mainPage, selector);
-                        PerformerCollection output = extractJob(worker, mainPage, jobPage);
+                        PerformerCollection output = extractJob(worker, mainPage, jobPage, departmentName);
                         collectionList.add(output);
                     } catch (AssertionFailedError e) {
                         currentPage = currentPage + 1;
@@ -61,25 +61,29 @@ public class PerformerExtractData extends Thread {
                         assertThat(nextPage).isVisible();
                         nextPage.click();
                         Page jobPage = navigateJob(worker, mainPage, selector);
-                        PerformerCollection output = extractJob(worker, mainPage, jobPage);
+                        PerformerCollection output = extractJob(worker, mainPage, jobPage, departmentName);
                         collectionList.add(output);
                     }
-//                    System.out.println("Worker: " + worker + " Page: " + currentPage + " Queue Selector: " + selector);
                 }
             }
-            // Create an ObjectMapper
-            ObjectMapper objectMapper = new ObjectMapper();
-            // Serialize the collectionList to a JSON file
-            objectMapper.writeValue(new File(performerOutputFile), collectionList);
-//            System.out.println("Data written to " + performerOutputFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-//            mainPage.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("worker-" + worker + ".png")));
+
+            Boolean jsonStatus = createJsonFile(performerOutputPath, collectionList);
         }
         System.out.println("Worker: " + worker + " done and completed: " + jobNumber + " scraping jobs");
     }
 
-    private static PerformerCollection extractJob(Integer worker, Page mainPage, Page jobPage) {
+    private static Boolean createJsonFile(String performerOutputPath, List<PerformerCollection> collectionList){
+        try (FileWriter writer = new FileWriter(performerOutputPath)) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(collectionList, new TypeToken<List<PerformerCollection>>() {}.getType(), writer);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return true;
+    }
+
+    private static PerformerCollection extractJob(Integer worker, Page mainPage, Page jobPage, String departmentName) {
         String output = "Worker: " + worker + " start extracting...";
         System.out.println(output);
 
@@ -102,12 +106,18 @@ public class PerformerExtractData extends Thread {
             String[] paraJobDescription = jobPage.locator("//div[@itemprop='responsibilities']").textContent().split("\\n");
             jobDescription = new String[paraJobDescription.length];
             for (int i = 0; i < paraJobDescription.length; i++) {
-                jobDescription[i] = paraJobDescription[i].replace("\u00a0", "").replace("•", "").trim();
+                jobDescription[i] = paraJobDescription[i]
+                        .replace("\u00a0", "") // remove &nbsp
+                        .replace("•", "")
+                        .trim();
             }
         } else if (listJobDescription.count() > 0) {
             jobDescription = new String[listJobDescription.count()];
             for (int i = 0; i < listJobDescription.count(); i++) {
-                jobDescription[i] = listJobDescription.nth(i).textContent().replace("\u00a0", "").replace("•", "").trim();
+                jobDescription[i] = listJobDescription.nth(i).textContent()
+                        .replace("\u00a0", "") // remove &nbsp
+                        .replace("•", "")
+                        .trim();
             }
         }
 
@@ -117,15 +127,22 @@ public class PerformerExtractData extends Thread {
             String[] paraJobQualification = jobPage.locator("//div[@itemprop='qualifications']").textContent().split("\\n");
             jobQualification = new String[paraJobQualification.length];
             for (int i = 0; i < paraJobQualification.length; i++) {
-                jobQualification[i] = paraJobQualification[i].replace("\u00a0", "").replace("•", "").trim();
+                jobQualification[i] = paraJobQualification[i]
+                        .replace("\u00a0", "") // remove &nbsp
+                        .replace("•", "")
+                        .trim();
             }
         } else if (listJobQualification.count() > 0) {
             jobQualification = new String[listJobQualification.count()];
             for (int i = 0; i < listJobQualification.count(); i++) {
-                jobQualification[i] = listJobQualification.nth(i).textContent().replace("\u00a0", "").replace("•", "").trim();
+                jobQualification[i] = listJobQualification.nth(i).textContent()
+                        .replace("\u00a0", "") // remove &nbsp
+                        .replace("•", "")
+                        .trim();
             }
         }
-        PerformerCollection collectionJob = new PerformerCollection(jobTitle, jobLocation, jobDescription, jobQualification, jobType, jobPostedBy);
+        PerformerCollection collectionJob = new PerformerCollection(departmentName, jobTitle, jobLocation, jobDescription, jobQualification, jobType, jobPostedBy);
+        jobPage.close();
 
 //        System.out.println("Worker: " + worker + " title: " + collectionJob.title);
 //        System.out.println("Worker: " + worker + " location: " + collectionJob.location);
@@ -133,9 +150,7 @@ public class PerformerExtractData extends Thread {
 //        System.out.println("Worker: " + worker + " qualification: " + Arrays.toString(collectionJob.qualification));
 //        System.out.println("Worker: " + worker + " job_type: " + collectionJob.job_type);
 //        System.out.println("Worker: " + worker + " postedBy: " + collectionJob.postedBy);
-
-        jobPage.close();
-//        System.out.println("Worker: " + worker + " finish extracting...");\
+//        System.out.println("Worker: " + worker + " finish extracting...");
 
         return collectionJob;
     }
