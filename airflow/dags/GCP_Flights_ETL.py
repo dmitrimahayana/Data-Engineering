@@ -44,8 +44,7 @@ delete_table = BigQueryDeleteTableOperator(
 ## Function ETL using Pandas GBQ
 def extract_flight_data():
     collect_obj = Collect_Flights('/opt/airflow/dataset/Revalue_Nature/Case 2/', 100000)
-    dict_result = collect_obj.collect_data()
-    df = pd.DataFrame(dict_result)
+    df = collect_obj.collect_data()
     
     credentials = service_account.Credentials.from_service_account_file(
         '/opt/airflow/dags/support/gcp/ringed-land-398802-1c30c3ab5c17.json',
