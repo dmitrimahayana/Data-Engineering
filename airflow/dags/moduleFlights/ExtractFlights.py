@@ -1,5 +1,6 @@
 import os, json
 import pandas as pd
+import pprint
 
 class Extract_Flights:
     # init method or constructor
@@ -17,30 +18,30 @@ class Extract_Flights:
             
             # Extract Header Data
             id = data['id']
-            unique_aircraft_type = data['fpl']['fpl_base'][0]['aircraft_type']
-            unique_flight_rules = data['fpl']['fpl_base'][0]['flight_rules']
+            start_time = data['centre_ctrl'][0]['start_time']
+            aircraft_type = data['fpl']['fpl_base'][0]['aircraft_type']
+            flight_rules = data['fpl']['fpl_base'][0]['flight_rules']
             #print("id: ", id, " unique_aircraft_type: ",unique_aircraft_type, " unique_aircraft_type: ", unique_flight_rules)
 
             #Extract Item Data
             df = pd.DataFrame(data['plots'])
             df_final = pd.DataFrame()
             try:
-                df['plots_max_altitude'] = df['I062/380'].apply(lambda x: x['subitem7']['altitude'] if isinstance(x, dict) and 'subitem7' in x and 'altitude' in x['subitem7'] else None)
-                df['plots_max_baro_vert_rate'] = df['I062/380'].apply(lambda x: x['subitem13']['baro_vert_rate'] if isinstance(x, dict) and 'subitem13' in x and 'baro_vert_rate' in x['subitem13'] else None)
-                df['plots_max_mach'] = df['I062/380'].apply(lambda x: x['subitem27']['mach'] if isinstance(x, dict) and 'subitem27' in x and 'mach' in x['subitem27'] else None)
-                df['plots_max_measured_flight_level'] = df['I062/136'].apply(lambda x: x['measured_flight_level'] if isinstance(x, dict) and 'measured_flight_level' in x else None)
-                df_final = df[['plots_max_altitude', 'plots_max_baro_vert_rate', 'plots_max_mach', 'plots_max_measured_flight_level']]
+                df['plots_altitude'] = df['I062/380'].apply(lambda x: x['subitem7']['altitude'] if isinstance(x, dict) and 'subitem7' in x and 'altitude' in x['subitem7'] else None)
+                df['plots_baro_vert_rate'] = df['I062/380'].apply(lambda x: x['subitem13']['baro_vert_rate'] if isinstance(x, dict) and 'subitem13' in x and 'baro_vert_rate' in x['subitem13'] else None)
+                df['plots_mach'] = df['I062/380'].apply(lambda x: x['subitem27']['mach'] if isinstance(x, dict) and 'subitem27' in x and 'mach' in x['subitem27'] else None)
+                df['plots_measured_flight_level'] = df['I062/136'].apply(lambda x: x['measured_flight_level'] if isinstance(x, dict) and 'measured_flight_level' in x else None)
             except Exception as e:
                 for col in df.columns:
                     if 'altitude' in df[col].values:
-                        df['plots_max_altitude'] = df[col].apply(lambda x: x['subitem7']['altitude'] if isinstance(x, dict) and 'subitem7' in x and 'altitude' in x['subitem7'] else None)
+                        df['plots_altitude'] = df[col].apply(lambda x: x['subitem7']['altitude'] if isinstance(x, dict) and 'subitem7' in x and 'altitude' in x['subitem7'] else None)
                     elif 'baro_vert_rate' in df[col].values:
-                        df['plots_max_baro_vert_rate'] = df[col].apply(lambda x: x['subitem13']['baro_vert_rate'] if isinstance(x, dict) and 'subitem13' in x and 'baro_vert_rate' in x['subitem13'] else None)
+                        df['plots_baro_vert_rate'] = df[col].apply(lambda x: x['subitem13']['baro_vert_rate'] if isinstance(x, dict) and 'subitem13' in x and 'baro_vert_rate' in x['subitem13'] else None)
                     elif 'mach' in df[col].values:
-                        df['plots_max_mach'] = df[col].apply(lambda x: x['subitem27']['mach'] if isinstance(x, dict) and 'subitem27' in x and 'mach' in x['subitem27'] else None)
+                        df['plots_mach'] = df[col].apply(lambda x: x['subitem27']['mach'] if isinstance(x, dict) and 'subitem27' in x and 'mach' in x['subitem27'] else None)
                     elif 'measured_flight_level' in df[col].values:
-                        df['plots_max_measured_flight_level'] = df[col].apply(lambda x: x['measured_flight_level'] if isinstance(x, dict) and 'measured_flight_level' in x else None)
-                    df_final = df[['plots_max_altitude', 'plots_max_baro_vert_rate', 'plots_max_mach', 'plots_max_measured_flight_level']]
+                        df['plots_measured_flight_level'] = df[col].apply(lambda x: x['measured_flight_level'] if isinstance(x, dict) and 'measured_flight_level' in x else None)
+            df_final = df[['plots_altitude', 'plots_baro_vert_rate', 'plots_mach', 'plots_measured_flight_level', 'time_of_track']]
             # print(df_final.shape)
                         
             total_row = df_final.shape[0]
@@ -48,39 +49,21 @@ class Extract_Flights:
             if(total_row == 0):
                 raise Exception("no data found, please check manually if it has correct format") 
             else:
-                # Get Min All Values
-                df_min = df_final.min()
-        
-                # Get Max All Values
-                df_max = df_final.max()
-                result = {}
-                result = df_max.to_dict()
-        
-                # Get Total Duration
-                df['time_of_track'] = pd.to_datetime(df['time_of_track'], errors='coerce')
-                total_duration = df['time_of_track'].max() - df['time_of_track'].min()
-                hours = total_duration.seconds // 3600
-                minutes = (total_duration.seconds % 3600) // 60
-                seconds = total_duration.seconds % 60
-                formatted_duration = f"{hours}h {minutes}m {seconds}s"
-        
-                # Append other data to dict
-                result['id'] = id
-                result['plots_duration'] = formatted_duration
-        
-                final_result = {
-                    'id': result['id'],
-                    'plots_duration': result['plots_duration'],
-                    'plots_max_altitude': result['plots_max_altitude'],
-                    'plots_max_baro_vert_rate': result['plots_max_baro_vert_rate'],
-                    'plots_max_mach': result['plots_max_mach'],
-                    'plots_max_measured_flight_level': result['plots_max_measured_flight_level'],
-                    'unique_aircraft_type': unique_aircraft_type,
-                    'unique_flight_rules': unique_flight_rules,
-                }
-                
+                df_final = df_final.copy() # This is to remove warning
+                df_final['time_of_track'] = pd.to_datetime(df_final['time_of_track'], errors='coerce')
+                df_final['start_time'] = start_time
+                df_final['start_time'] = pd.to_datetime(df_final['start_time'])
+                df_final['id'] = id
+                df_final['aircraft_type'] = aircraft_type
+                df_final['flight_rules'] = flight_rules
+                # df_final.loc[:, 'id'] = id
+                # df_final.loc[:, 'aircraft_type'] = aircraft_type
+                # df_final.loc[:, 'flight_rules'] = flight_rules
+                df_final = df_final[['id', 'aircraft_type', 'flight_rules', 'plots_altitude', 'plots_baro_vert_rate', 'plots_mach', 'plots_measured_flight_level', 'start_time', 'time_of_track']]
+                df_cleaned = df_final.dropna(subset=['time_of_track'])
+
                 #return value
-                return final_result
+                return df_cleaned
 
 
 # folder_path = 'D:\\00 Project\\00 My Project\\Dataset\\Revalue_Nature\\Case 2\\' # Assuming this where all json file will be stored
@@ -88,4 +71,4 @@ class Extract_Flights:
 # file_name = '100002.json'
 # flight_obj = Extract_Flights(folder_path+file_name)
 # flight = flight_obj.extract_data()
-# print(flight['unique_aircraft_type'])
+# print(flight)

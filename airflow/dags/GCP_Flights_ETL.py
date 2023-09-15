@@ -13,7 +13,7 @@ from airflow.contrib.operators.bigquery_operator import BigQueryOperator
 
 # Define the default arguments for the DAG
 default_args = {
-    'owner': 'your_name',
+    'owner': 'Dmitri',
     'start_date': datetime(2023, 9, 12),
     'retries': 1,  # Number of retries if a task fails
     'retry_delay': timedelta(minutes=5),  # Time between retries
@@ -23,7 +23,7 @@ default_args = {
 dag = DAG(
     'BigQuery_Flight_ETL', 
     default_args=default_args,
-description='An Airflow DAG for BigQuery Flights Dataset',
+    description='An Airflow DAG for BigQuery Flights Dataset',
     schedule_interval=None,  # Set the schedule interval (e.g., None for manual runs)
     catchup=False  # Do not backfill (run past dates) when starting the DAG
 )
@@ -44,8 +44,7 @@ delete_table = BigQueryDeleteTableOperator(
 ## Function ETL using Pandas GBQ
 def extract_flight_data():
     collect_obj = Collect_Flights('/opt/airflow/dataset/Revalue_Nature/Case 2/', 100000)
-    dict_result = collect_obj.collect_data()
-    df = pd.DataFrame(dict_result)
+    df = collect_obj.collect_data()
     
     credentials = service_account.Credentials.from_service_account_file(
         '/opt/airflow/dags/support/gcp/ringed-land-398802-1c30c3ab5c17.json',
