@@ -1,0 +1,9 @@
+# Run DBT
+dbt run
+
+# Test DBT
+dbt test
+
+# Generate Document
+dbt docs generate
+dbt docs serve
