@@ -1,0 +1,146 @@
+version: "3.5"
+services:
+
+#  kafka-gen-00:
+#    image: confluentinc/cp-kafka:7.3.3
+#    container_name: kafka-gen-00
+#    volumes:
+#      - ./scripts/create_cluster_id.sh:/tmp/create_cluster_id.sh
+#      - ./clusterID:/tmp/clusterID
+#    command: "bash -c '/tmp/create_cluster_id.sh'"
+
+  kafka100:
+    image: confluentinc/cp-kafka:7.3.3
+    container_name: kafka100
+    ports:
+      - "10001:10001"
+      - "59091:59091"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_JMX_PORT: 59091
+      KAFKA_PROCESS_ROLES: 'controller,broker'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka100:9093,2@kafka200:9093,3@kafka300:9093'
+
+      KAFKA_LISTENERS: BROKER://kafka100:19092,CONTROLLER://kafka100:9093,EXTERNAL://kafka100:10001
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka100:19092,EXTERNAL://localhost:10001
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL: PLAIN
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+
+      KAFKA_LISTENER_NAME_BROKER_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+      KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+      KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      TOPIC_AUTO_CREATE: 'false'
+      # 2 Days of Retention
+      KAFKA_LOG_RETENTION_HOURS: 48
+      # For testing small segments 16MB and retention of 128MB
+      KAFKA_LOG_SEGMENT_BYTES: 16777216
+      KAFKA_LOG_RETENTION_BYTES: 134217728
+    volumes:
+      - kafka100-data:/var/lib/kafka/data
+      - ./scripts/update_run.sh:/tmp/update_run.sh
+      - ./clusterID:/tmp/clusterID
+    command: "bash -c '/tmp/update_run.sh && /etc/confluent/docker/run'"
+    restart: always
+
+  kafka200:
+    image: confluentinc/cp-kafka:7.3.3
+    container_name: kafka200
+    ports:
+      - "10002:10002"
+      - "59092:59092"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_JMX_PORT: 59092
+      KAFKA_PROCESS_ROLES: 'controller,broker'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka100:9093,2@kafka200:9093,3@kafka300:9093'
+
+      KAFKA_LISTENERS: BROKER://kafka200:19092,CONTROLLER://kafka200:9093,EXTERNAL://kafka200:10002
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka200:19092,EXTERNAL://localhost:10002
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL: PLAIN
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+
+      KAFKA_LISTENER_NAME_BROKER_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+      KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+      KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      TOPIC_AUTO_CREATE: 'false'
+      # 2 Days of Retention
+      KAFKA_LOG_RETENTION_HOURS: 48
+      # For testing small segments 16MB and retention of 128MB
+      KAFKA_LOG_SEGMENT_BYTES: 16777216
+      KAFKA_LOG_RETENTION_BYTES: 134217728
+    volumes:
+      - kafka200-data:/var/lib/kafka/data
+      - ./scripts/update_run.sh:/tmp/update_run.sh
+      - ./clusterID:/tmp/clusterID
+    command: "bash -c '/tmp/update_run.sh && /etc/confluent/docker/run'"
+    restart: always
+
+  kafka300:
+    image: confluentinc/cp-kafka:7.3.3
+    container_name: kafka300
+    ports:
+      - "10003:10003"
+      - "59093:59093"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_JMX_PORT: 59093
+      KAFKA_PROCESS_ROLES: 'controller,broker'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka100:9093,2@kafka200:9093,3@kafka300:9093'
+
+      KAFKA_LISTENERS: BROKER://kafka300:19092,CONTROLLER://kafka300:9093,EXTERNAL://kafka300:10003
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka300:19092,EXTERNAL://localhost:10003
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL: PLAIN
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+
+      KAFKA_LISTENER_NAME_BROKER_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+      KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+      KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret" user_admin="admin-secret";
+
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      TOPIC_AUTO_CREATE: 'false'
+      # 2 Days of Retention
+      KAFKA_LOG_RETENTION_HOURS: 48
+      # For testing small segments 16MB and retention of 128MB
+      KAFKA_LOG_SEGMENT_BYTES: 16777216
+      KAFKA_LOG_RETENTION_BYTES: 134217728
+    volumes:
+      - kafka300-data:/var/lib/kafka/data
+      - ./scripts/update_run.sh:/tmp/update_run.sh
+      - ./clusterID:/tmp/clusterID
+    command: "bash -c '/tmp/update_run.sh && /etc/confluent/docker/run'"
+    restart: always
+
+volumes:
+  kafka100-data:
+  kafka200-data:
+  kafka300-data:
+
+networks:
+  default:
+    name: my_docker_network
+    external: true
