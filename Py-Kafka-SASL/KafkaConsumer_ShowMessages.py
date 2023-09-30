@@ -1,3 +1,4 @@
+import threading
 from itertools import permutations
 
 from confluent_kafka import Consumer, KafkaException, KafkaError
@@ -8,51 +9,45 @@ from confluent_kafka.serialization import StringSerializer, SerializationContext
 from Module.Messages import UserMessages, um_to_dict, dct_to_um
 import asyncio
 import sys
+import time
 
 
 class ShowMessages(object):
-    def __init__(self, topic, bootstrap_servers, sr_config, schema_name):
+    def __init__(self, username, topic, bootstrap_servers, sr_config, schema_name):
+        self.username = username
         self.topic = topic
         self.bootstrap_servers = bootstrap_servers
         self.sr_config = sr_config
         self.schema_name = schema_name  # "upwork_user_messages"
+        self.message_avro_deserializer = None
+        self.consumer = None
 
-    async def display_message(self):
+    def config_message(self):
         # Define Kafka Deserializer and Schema
         schema_registry_client = SchemaRegistryClient(self.sr_config)
         message_schema = schema_registry_client.get_latest_version(self.schema_name)
-        message_avro_deserializer = AvroDeserializer(schema_registry_client,
-                                                     message_schema.schema.schema_str,
-                                                     dct_to_um)
+        self.message_avro_deserializer = AvroDeserializer(schema_registry_client,
+                                                          message_schema.schema.schema_str,
+                                                          dct_to_um)
 
         kafka_config = {
             'bootstrap.servers': self.bootstrap_servers,
             'auto.offset.reset': 'earliest',
-            'group.id': self.topic,
+            'group.id': self.topic + "-consume_by-" + self.username,
         }
-        consumer = Consumer(kafka_config)
-        consumer.subscribe([self.topic])
+        self.consumer = Consumer(kafka_config)
+        self.consumer.subscribe([self.topic])
 
-        try:
-            while True:
-                msg = consumer.poll(timeout=1.0)
-                if msg is None: continue
+    def display_message(self, name, run_event):
+        print("Start", name)
+        while run_event.is_set():
+            msg = self.consumer.poll(timeout=1.0)
+            if msg is not None:
+                if msg.topic() == self.topic:
+                    auth_msg = self.message_avro_deserializer(msg.value(),
+                                                              SerializationContext(msg.topic(), MessageField.VALUE))
+                    print("Message:", auth_msg)
 
-                if msg.error():
-                    if msg.error().code() == KafkaError._PARTITION_EOF:
-                        sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
-                                         (msg.topic(), msg.partition(), msg.offset()))
-                    elif msg.error():
-                        raise KafkaException(msg.error())
-                else:
-                    if msg.topic() == self.topic:
-                        auth_msg = message_avro_deserializer(msg.value(),
-                                                             SerializationContext(msg.topic(), MessageField.VALUE))
-                        print("Message:", auth_msg)
-
-        except KeyboardInterrupt:
-            print("Close Consumer...")
-            consumer.close()
 
 if __name__ == "__main__":
     bootstrap_servers = 'localhost:39092,localhost:39093,localhost:39094'
@@ -78,6 +73,21 @@ if __name__ == "__main__":
                 friends_topic = key
                 print("Found existing topic:", friends_topic)
                 break
-    sm = ShowMessages(friends_topic, bootstrap_servers, sr_config, "upwork_user_messages")
-    asyncio.get_event_loop().run_until_complete(sm.display_message())
 
+    sm = ShowMessages("viewer", friends_topic, bootstrap_servers, sr_config, "upwork_user_messages")
+    sm.config_message()
+
+    run_event = threading.Event()
+    run_event.set()
+
+    conversation_thread = threading.Thread(target=sm.display_message, args=("Conversation Messages", run_event))
+
+    conversation_thread.start()
+    try:
+        while 1:
+            time.sleep(.1)
+    except KeyboardInterrupt:
+        print("attempting to close threads")
+        run_event.clear()
+        conversation_thread.join()
+        print("threads successfully closed")
