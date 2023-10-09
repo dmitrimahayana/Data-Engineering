@@ -62,9 +62,9 @@ kafka-console-consumer.sh --consumer.config playground.config --bootstrap-server
 docker exec -ti kafka1 /usr/bin/kafka-configs --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --entity-type topics --entity-name _schemas --alter --add-config cleanup.policy=compact
 
 ##Docker Topic
-docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --list
-docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --config cleanup.policy=compact --topic streaming.goapi.idx.stock.json
-docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --create --replication-factor 2 --partitions 4 --config cleanup.policy=compact --topic streaming.goapi.idx.companies.json
+docker exec -ti kafka001 /usr/bin/kafka-topics --bootstrap-server kafka001:29092;kafka002:29092;kafka003:29092 --list
+docker exec -ti kafka001 /usr/bin/kafka-topics --bootstrap-server kafka001:29092;kafka002:29092;kafka003:29092 --create --replication-factor 3 --partitions 9 --config cleanup.policy=compact --topic streaming.goapi.idx.stock.json
+docker exec -ti kafka001 /usr/bin/kafka-topics --bootstrap-server kafka001:29092;kafka002:29092;kafka003:29092 --create --replication-factor 3 --partitions 9 --config cleanup.policy=compact --topic streaming.goapi.idx.companies.json
 docker exec -ti kafka1 /usr/bin/kafka-consumer-groups --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --execute --group consumer-goapi-idx-stock --reset-offsets --to-earliest --topic join.stock.company
 docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic group.stock
 docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --topic group.company
@@ -72,6 +72,8 @@ docker exec -ti kafka1 /usr/bin/kafka-console-consumer --bootstrap-server kafka1
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.companies.json
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic streaming.goapi.idx.stock.json
 docker exec -ti kafka1 /usr/bin/kafka-topics --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --delete --topic ksqltablegroupstock
+docker exec -ti kafka1 /usr/bin/kafka-consumer-groups --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --execute --group upwork_dmitri_auth_result --reset-offsets --to-earliest --topic join.stock.company
+
 
 
 ##Docker Topic with RETENTION
@@ -102,11 +104,11 @@ SET 'auto.offset.reset'='latest';
 
 #Create Stock Stream with Avro Format
 CREATE OR REPLACE STREAM ksqlstreamstock (id VARCHAR, ticker VARCHAR, date VARCHAR, open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT)
-WITH (KAFKA_TOPIC='streaming.goapi.idx.stock.json', VALUE_FORMAT='AVRO', partitions=4);
+WITH (KAFKA_TOPIC='streaming.goapi.idx.stock.json', VALUE_FORMAT='AVRO', partitions=9);
 
 #Create Company Stream with Avro Format
 CREATE OR REPLACE STREAM ksqlstreamcompany (id VARCHAR, ticker VARCHAR, name VARCHAR, logo VARCHAR)
-WITH (kafka_topic='streaming.goapi.idx.companies.json', value_format='AVRO', partitions=4);
+WITH (kafka_topic='streaming.goapi.idx.companies.json', value_format='AVRO', partitions=9);
 
 #Query to check duplication of data
 SELECT ticker, COUNT(ticker) AS COUNTTICKER FROM ksqlstreamstock GROUP BY ticker EMIT CHANGES;
@@ -177,7 +179,7 @@ CREATE OR REPLACE TABLE ksqltablejoinstockcompany AS
 	GROUP BY id EMIT CHANGES;
 
 #Query to check duplication of data
-SELECT * FROM ksqltablegroupstock where id = 'GOTO_2023-07-28';
+SELECT * FROM ksqltablegroupstock where id = 'BRPT_2023-08-01';
 SELECT * FROM ksqltablegroupcompany where ticker = 'GOTO';
 
 #Drop Table or Stream and Mention Delete Topic too if required to clean up existing topic

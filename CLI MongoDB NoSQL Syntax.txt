@@ -33,3 +33,4 @@ db.orders.aggregate([
 {id: /.*20.*/}
 {companyid : /.*.*/}
 {windowstart: { $gt: 0 }}
+{date: /.*2023-09-.*/}

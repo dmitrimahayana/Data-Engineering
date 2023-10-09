@@ -8,12 +8,67 @@ cd apache-cassandra-4.0.10/ && bin/cqlsh localhost
 ps auwx | grep cassandra
 sudo kill 27698
 
-#Create Keyspace
+##Create Keyspace
 CREATE KEYSPACE idxstock WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
 DESCRIBE keyspaces;
 
-#Run Kafka-Connect-Sink-Cassandra
+##Run Kafka-Connect-Sink-Cassandra
 connect-standalone.sh connect-standalone.properties cassandra.properties
 
-#Cassandra - Kafka CLI
+##Cassandra - Kafka CLI
 SELECT * FROM system_schema.columns WHERE keyspace_name = 'idxstock2' AND table_name = 'kafka_connect_offsets';
+
+## Docker Cassandra Windows
+docker exec -it cassandra-container cqlsh -u YOUR_USERNAME -p YOUR_PASSWORD
+docker exec -it cassandra cqlsh -u cassandra -p cassandra
+
+## Create a keyspace
+CREATE KEYSPACE IF NOT EXISTS messenger_app WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
+
+## Create Table and Index
+CREATE TABLE IF NOT EXISTS messenger_app.user_data (
+username text PRIMARY KEY,
+email text,
+machine_id text,
+session_id text,
+status text,
+last_update_timestamp timestamp
+);
+
+CREATE TABLE IF NOT EXISTS messenger_app.user_otp (
+username text PRIMARY KEY,
+email text,
+otp_system text
+);
+
+CREATE INDEX ON messenger_app.user_data (email);
+CREATE INDEX ON messenger_app.user_otp (email);
+
+## Insert data
+INSERT INTO messenger_app.user_data
+(username, email, machine_id, session_id, status, last_update_timestamp)
+VALUES ('vara', '123@gmail.com', 'aa-bb-cc', '', '', toTimeStamp(now()));
+INSERT INTO messenger_app.user_data
+(username, email, machine_id, session_id, status, last_update_timestamp)
+VALUES ('dmitri.mahayana', 'dmitri.mahayana@gmail.com', '64:5d:86:55:cf:58', '', '', toTimeStamp(now()));
+
+INSERT INTO messenger_app.user_otp
+(username, email, otp_system)
+VALUES ('123', '123@gmail.com', 'ABCDEF');
+INSERT INTO messenger_app.user_otp
+(username, email, otp_system)
+VALUES ('111', '123@gmail.com', '111111');
+INSERT INTO messenger_app.user_otp
+(username, email, otp_system)
+VALUES ('234', '123@gmail.com', '234221');
+
+## Show Data
+SELECT * FROM messenger_app.user_data;
+
+SELECT * FROM messenger_app.user_otp;
+
+SELECT * FROM messenger_app.user_data WHERE username = 'dmitri.mahayana' AND email = 'dmitri.mahayana@gmail.com';
+
+## Get DataCenter Name
+use system;
+select data_center from local;
