@@ -1,0 +1,38 @@
+## Kubernetes Cluster Info
+kubectl cluster-info
+kubectl cluster-info dump
+
+## Convert Docker Compose to Kubernetes
+kompose convert
+
+## Kubernetes Start Service Kafka
+kubectl apply -f kafka001-service.yaml,kafka002-service.yaml,kafka003-service.yaml,ksqldb-server-service.yaml,schema-registry-service.yaml,kafka001-deployment.yaml,kafka001-persistentvolumeclaim.yaml,mynetwork-networkpolicy.yaml,kafka002-deployment.yaml,kafka002-persistentvolumeclaim.yaml,kafka003-deployment.yaml,kafka003-persistentvolumeclaim.yaml,ksqldb-server-deployment.yaml,schema-registry-deployment.yaml
+
+## Kubernetes Check Service
+kubectl describe svc
+
+## Kubernetes Check Pods
+kubectl get pods
+
+## Delete Pods
+kubectl delete -f kafka001-service.yaml,kafka002-service.yaml,kafka003-service.yaml,kafka001-deployment.yaml,kafka001-persistentvolumeclaim.yaml,kafka002-deployment.yaml,kafka002-persistentvolumeclaim.yaml,kafka003-deployment.yaml,kafka003-persistentvolumeclaim.yaml,mynetwork-networkpolicy.yaml
+
+kubectl apply -f kafka001-service.yaml,kafka002-service.yaml,kafka003-service.yaml,kafka001-deployment.yaml,kafka001-persistentvolumeclaim.yaml,kafka002-deployment.yaml,kafka002-persistentvolumeclaim.yaml,kafka003-deployment.yaml,kafka003-persistentvolumeclaim.yaml,mynetwork-networkpolicy.yaml
+
+
+kafka001-service.yaml,kafka002-service.yaml,kafka003-service.yaml,kafka001-deployment.yaml,kafka001-persistentvolumeclaim.yaml,kafka002-deployment.yaml,kafka002-persistentvolumeclaim.yaml,kafka003-deployment.yaml,kafka003-persistentvolumeclaim.yaml,mynetwork-networkpolicy.yaml
+
+ksqldb-server-service.yaml,
+schema-registry-service.yaml,
+ksqldb-server-deployment.yaml,
+schema-registry-deployment.yaml,
+
+
+
+## Check Pods Log
+kubectl logs podname
+kubectl logs kafka001-6fb7598556-wkx4z
+
+kafka001-6fb7598556-wkx4z   0/1     ContainerCreating   0          4s
+kafka002-58559c94c6-smjjb   0/1     Pending             0          4s
+kafka003-95bdd9c6-kxmxc     0/1     Pending             0          4s

@@ -1,5 +1,6 @@
 ##Docker create network
 docker network create --driver bridge my_docker_network
+docker network create --driver bridge mynetwork
 
 ##Run Docker Compose
 docker compose up -d
@@ -10,15 +11,30 @@ docker ps
 ##Docker check network connection
 docker network inspect my_docker_network
 
-##Docker add network connection between container
+#Docker add network connection between container Spark
 docker network connect my_docker_network spark-master
+
+#Docker add network connection between MongoDB
 docker network connect my_docker_network mongodb-server
+
+#Docker add network connection between Airflow
 docker network connect my_docker_network airflow-airflow-webserver-1
 docker network connect my_docker_network airflow-airflow-scheduler-1
 docker network connect my_docker_network airflow-airflow-triggerer-1
 docker network connect my_docker_network airflow-airflow-worker-1
 docker network connect my_docker_network airflow-postgres-1
 docker network connect my_docker_network airflow-redis-1
+docker network connect my_docker_network airbyte-db
+docker network connect my_docker_network airbyte-temporal
+docker network connect my_docker_network airbyte-connector-builder-server
+docker network connect my_docker_network airbyte-api-server
+docker network connect my_docker_network airbyte-worker
+docker network connect my_docker_network airbyte-cron
+docker network connect my_docker_network airbyte-webapp
+docker network connect my_docker_network airbyte-server
+docker network connect my_docker_network airbyte-proxy
+
+#Docker add network connection between Flink
 docker network connect my_docker_network jobmanager
 docker network connect my_docker_network taskmanager
 
