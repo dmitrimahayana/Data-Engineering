@@ -26,7 +26,7 @@ dag = DAG(
 ## BigQuery config variables
 BQ_CONN_ID = "google_cloud_default" # Defined in airflow connection
 BQ_PROJECT = "ringed-land-398802"
-BQ_DATASET = "IDX"
+BQ_DATASET = "IDX_Stock"
 BQ_TABLE1 = "dim_stocks"
 BQ_TABLE2 = "dim_companies"
 BQ_BUCKET = 'idx-data'
@@ -143,8 +143,8 @@ bq_create_stock_view = BigQueryCreateEmptyTableOperator(
                     FROM (
                         SELECT a.id, a.ticker, b.name, a.date, a.open, a.high, a.low, a.close, a.volume, b.logo,
                         ROW_NUMBER() OVER (PARTITION BY a.ticker ORDER BY a.date desc) AS rownum
-                        FROM `IDX.dim_stocks` AS a
-                        INNER JOIN `IDX.dim_companies` AS b ON a.ticker = b.ticker
+                        FROM `IDX_Stock.dim_stocks` AS a
+                        INNER JOIN `IDX_Stock.dim_companies` AS b ON a.ticker = b.ticker
                     ) table_row
                 ) table_rank
                 ORDER BY table_rank.ranking asc, table_rank.ticker asc;
@@ -169,9 +169,9 @@ bq_create_last_stock_view = BigQueryCreateEmptyTableOperator(
                 ((rank1.close - rank2.close)/rank2.close) * 100 AS changepercent,
                 rank1.volume, rank1.logo
                 FROM
-                (SELECT * FROM `IDX.stock_view` WHERE ranking = 1) rank1
+                (SELECT * FROM `IDX_Stock.stock_view` WHERE ranking = 1) rank1
                 INNER JOIN 
-                (SELECT * FROM `IDX.stock_view` WHERE ranking = 2) rank2
+                (SELECT * FROM `IDX_Stock.stock_view` WHERE ranking = 2) rank2
                 ON rank1.ticker = rank2.ticker
                 """,
         "useLegacySql": False,

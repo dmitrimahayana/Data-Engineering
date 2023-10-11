@@ -39,7 +39,7 @@ def postgres_stock_loaders(df):
 def postgres_company_loaders(df):
     load.add_data_sqlalchemy(df, 'ksql-company-stream')
 
-with DAG('IDX_Stock_ETL', schedule_interval=timedelta(minutes=5), default_args=default_args, catchup=False) as dag:
+with DAG('IDX_Stock_ETL', schedule_interval=timedelta(minutes=1200), default_args=default_args, catchup=False) as dag:
     df_stock = mongodb_extractStock()
     df_company = mongodb_extractCompany()
     df_transform = transformers(df_stock, df_company)
