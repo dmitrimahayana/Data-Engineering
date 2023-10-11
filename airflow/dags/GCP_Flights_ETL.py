@@ -5,13 +5,13 @@ from datetime import timedelta, datetime
 from moduleFlights.CollectFlights import Collect_Flights
 
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryDeleteTableOperator
+from airflow.providers.google.cloud.operators.bigquery import BigQueryCheckOperator
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
 
-# Define the default arguments for the DAG
+## Define the default arguments for the DAG
 default_args = {
     'owner': 'Dmitri',
     'start_date': datetime(2023, 9, 12),
@@ -19,7 +19,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),  # Time between retries
 }
 
-# Create a DAG instance
+## Create a DAG instance
 dag = DAG(
     'BigQuery_Flight_ETL', 
     default_args=default_args,
@@ -28,7 +28,7 @@ dag = DAG(
     catchup=False  # Do not backfill (run past dates) when starting the DAG
 )
 
-# Config variables
+## Config variables
 BQ_CONN_ID = "google_cloud_default"
 BQ_PROJECT = "ringed-land-398802"
 BQ_DATASET = "Flights"
@@ -43,7 +43,8 @@ delete_table = BigQueryDeleteTableOperator(
 
 ## Function ETL using Pandas GBQ
 def extract_flight_data():
-    collect_obj = Collect_Flights('/opt/airflow/dataset/Revalue_Nature/Case 2/', 100000)
+    LIMIT_JSON_FILE = 100000
+    collect_obj = Collect_Flights('/opt/airflow/dataset/Revalue_Nature/Case 2/', LIMIT_JSON_FILE)
     df = collect_obj.collect_data()
     
     credentials = service_account.Credentials.from_service_account_file(
@@ -60,21 +61,29 @@ extract_flight_task = PythonOperator(
 )
 
 ## Task BigQueryOperator: check that the data table is existed in the dataset
-bq_load_task = BigQueryOperator(
-    task_id='bq_load_task',
-    sql='''
-    SELECT
-      *
-    FROM `ringed-land-398802.Flights.Flight_List`;
-    ''',
-    destination_dataset_table=f'{BQ_PROJECT}.{BQ_DATASET}.Flight_List',
-    write_disposition='WRITE_TRUNCATE', # Choose WRITE_TRUNCATE, WRITE_APPEND, or WRITE_EMPTY
-    allow_large_results=True,
+bq_table_count = BigQueryCheckOperator(
+    task_id="bq_table_count",
+    sql=f"SELECT COUNT(*) FROM `{BQ_DATASET}.{BQ_TABLE}`;",
     use_legacy_sql=False,
     gcp_conn_id=BQ_CONN_ID,  # Use your Airflow BigQuery connection ID
     dag=dag
 )
+## Task BigQueryOperator: check that the data table is existed in the dataset
+# bq_load_task = BigQueryOperator(
+#     task_id='bq_load_task',
+#     sql='''
+#     SELECT
+#       *
+#     FROM `ringed-land-398802.Flights.Flight_List`;
+#     ''',
+#     destination_dataset_table=f'{BQ_PROJECT}.{BQ_DATASET}.Flight_List',
+#     write_disposition='WRITE_TRUNCATE', # Choose WRITE_TRUNCATE, WRITE_APPEND, or WRITE_EMPTY
+#     allow_large_results=True,
+#     use_legacy_sql=False,
+#     gcp_conn_id=BQ_CONN_ID,  # Use your Airflow BigQuery connection ID
+#     dag=dag
+# )
 
-# Define task
+## Define task
 delete_table
-extract_flight_task >> bq_load_task
+extract_flight_task >> bq_table_count

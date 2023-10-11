@@ -57,7 +57,7 @@ SNOWFLAKE_ACC = "IUDFCYJ-UD33577"
 
 ## Function to Extract Data from Flight Dataset
 def extract_flight_data():
-    LIMIT_JSON_FILE = 2
+    LIMIT_JSON_FILE = 1
     collect_obj = Collect_Flights('/opt/airflow/dataset/Revalue_Nature/Case 2/', LIMIT_JSON_FILE)
     df = collect_obj.collect_data()
 
@@ -67,7 +67,7 @@ def extract_flight_data():
 
     # Convert df to snowflake data
     with engine.connect() as con:
-            df.to_sql(name=SNOWFLAKE_TABLE, con=con, if_exists='replace', index=False)
+            df.to_sql(name=SNOWFLAKE_TABLE, con=con, if_exists='replace', index=False, method=pd_writer)
 
 ## Task PythonOperator: Insert a new table from Dataframe
 etl_flight_task = PythonOperator(

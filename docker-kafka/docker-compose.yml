@@ -1,0 +1,155 @@
+version: "3.5"
+services:
+
+  kafka001:
+    image: confluentinc/cp-server:7.5.0
+    container_name: kafka001
+    ports:
+      - "19092:19092"
+      - "59092:59092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_JMX_PORT: 59092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka001:29092,PLAINTEXT_HOST://localhost:19092'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka001:29093,2@kafka002:29093,3@kafka003:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka001:29092,CONTROLLER://kafka001:29093,PLAINTEXT_HOST://0.0.0.0:19092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'jfSv2NDfTC2md-uZ2R6L7g'
+      TOPIC_AUTO_CREATE: 'false'
+      # 2 Days of Retention
+      KAFKA_LOG_RETENTION_HOURS: 48
+      # For testing small segments 16MB and retention of 128MB
+      KAFKA_LOG_SEGMENT_BYTES: 16777216
+      KAFKA_LOG_RETENTION_BYTES: 134217728
+    volumes:
+      - kafka001:/var/lib/kafka/data
+    restart: always
+
+  kafka002:
+    image: confluentinc/cp-server:7.5.0
+    container_name: kafka002
+    ports:
+      - "19093:19093"
+      - "59093:59093"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_JMX_PORT: 59093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka002:29092,PLAINTEXT_HOST://localhost:19093'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka001:29093,2@kafka002:29093,3@kafka003:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka002:29092,CONTROLLER://kafka002:29093,PLAINTEXT_HOST://0.0.0.0:19093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'jfSv2NDfTC2md-uZ2R6L7g'
+      TOPIC_AUTO_CREATE: 'false'
+      # 2 Days of Retention
+      KAFKA_LOG_RETENTION_HOURS: 48
+      # For testing small segments 16MB and retention of 128MB
+      KAFKA_LOG_SEGMENT_BYTES: 16777216
+      KAFKA_LOG_RETENTION_BYTES: 134217728
+    volumes:
+      - kafka002:/var/lib/kafka/data
+    restart: always
+
+  kafka003:
+    image: confluentinc/cp-server:7.5.0
+    container_name: kafka003
+    ports:
+      - "19094:19094"
+      - "59094:59094"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_JMX_PORT: 59094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka003:29092,PLAINTEXT_HOST://localhost:19094'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka001:29093,2@kafka002:29093,3@kafka003:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka003:29092,CONTROLLER://kafka003:29093,PLAINTEXT_HOST://0.0.0.0:19094'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'jfSv2NDfTC2md-uZ2R6L7g'
+      TOPIC_AUTO_CREATE: 'false'
+      # 2 Days of Retention
+      KAFKA_LOG_RETENTION_HOURS: 48
+      # For testing small segments 16MB and retention of 128MB
+      KAFKA_LOG_SEGMENT_BYTES: 16777216
+      KAFKA_LOG_RETENTION_BYTES: 134217728
+    volumes:
+      - kafka003:/var/lib/kafka/data
+    restart: always
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: schema-registry
+    depends_on:
+      - kafka001
+      - kafka002
+      - kafka003
+    ports:
+      - "8282:8282"
+      - "1088:1088"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka001:29092,kafka002:29092,kafka003:29092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8282
+      SCHEMA_REGISTRY_JMX_OPTS:
+        -Djava.rmi.server.hostname=localhost
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=1088
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Dcom.sun.management.jmxremote.rmi.port=1088
+    restart: always
+
+  ksqldb-server:
+    image: confluentinc/ksqldb-server:0.29.0
+    container_name: ksqldb-server
+    depends_on:
+      - kafka001
+      - kafka002
+      - kafka003
+      - schema-registry
+    ports:
+      - "9088:9088"
+      - "1099:1099"
+    environment:
+      KSQL_LISTENERS: http://0.0.0.0:9088
+      KSQL_BOOTSTRAP_SERVERS: kafka001:29092,kafka002:29092,kafka003:29092
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8282
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      KSQL_KSQL_QUERY_PULL_METRICS_ENABLED: "true"
+      KSQL_JMX_OPTS:
+        -Djava.rmi.server.hostname=localhost
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=1099
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Dcom.sun.management.jmxremote.rmi.port=1099
+    restart: always
+
+  ksqldb-cli:
+    image: confluentinc/ksqldb-cli:0.29.0
+    container_name: ksqldb-cli
+    depends_on:
+      - ksqldb-server
+    entrypoint: /bin/sh
+    tty: true
+    restart: always
+
+volumes:
+  kafka001:
+  kafka002:
+  kafka003:
+
+networks:
+  default:
+    name: mynetwork
+    external: true

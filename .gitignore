@@ -1,2 +1,4 @@
 
 Py-Kafka-SASL/SendEmail.py
+airflow/dags/Py-DBT-IDX/profiles.yml
+airflow/dags/Py-DBT-Snowflake-Brazilian_Olist/profiles.yml

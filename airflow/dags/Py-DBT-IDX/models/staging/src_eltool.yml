@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: public
+    description: Data from postgres database, brought in by an EL process.
+    tables:
+      - name: ksql-stock-stream
+        columns:
+          - name: id
+            tests:
+              - not_null
+#              - unique
+      - name: ksql-company-stream
+        columns:
+          - name: id
+            tests:
+              - not_null
+      - name: customers
+        columns:
+          - name: customer_id
+            tests:
+              - not_null
+      - name: orders
+        columns:
+          - name: order_id
+            tests:
+              - not_null
+              - unique
+          - name: cust_id
+            tests:
+              - relationships:
+                  to: source('public', 'customers')
+                  field: customer_id
+      - name: state
