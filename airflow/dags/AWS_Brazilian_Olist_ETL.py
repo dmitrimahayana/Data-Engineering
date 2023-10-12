@@ -32,7 +32,7 @@ current_date = today.strftime('%Y-%m-%d')
 
 # Config variables
 bucket_name = "brazilian-olist"
-bucket_subfolder = "extraction/"
+bucket_subfolder = "extraction/" + current_date + "/"
 postgres_conn = "postgres_default"
 aws_conn = "aws_default"
 redshift_conn = "redshift_default"
@@ -41,7 +41,6 @@ redshift_dbuser = "admin"
 redshift_poll_interval = 10
 redshift_postgres_conn = "redshift_postgres_default"
 aws_region = "ap-southeast-1"
-redshift_cluster_identifier = "mycluster.303629564659"
 
 # Create Bucket
 # create_bucket = S3CreateBucketOperator(
@@ -204,46 +203,46 @@ transfer_s3_to_redshift_order_payments = S3ToRedshiftOperator(
 # Define the Redshift PostgresOperator task
 count_products_redshift_sql_task = PostgresOperator(
     task_id='count_products_redshift_sql_task',
-    postgres_conn_id=redshift_postgres_conn,  # Connection ID to your Redshift cluster
+    postgres_conn_id=redshift_postgres_conn,
     sql="SELECT * FROM PUBLIC.PRODUCTS;",
-    autocommit=True,  # Set autocommit to True if the query doesn't require a transaction
-    database='dev',  # Specify your Redshift database name
+    autocommit=True,
+    database='dev',
     dag=dag,
 )
 # Define the Redshift PostgresOperator task
 count_sellers_redshift_sql_task = PostgresOperator(
     task_id='count_sellers_redshift_sql_task',
-    postgres_conn_id=redshift_postgres_conn,  # Connection ID to your Redshift cluster
+    postgres_conn_id=redshift_postgres_conn,
     sql="SELECT * FROM PUBLIC.sellers;",
-    autocommit=True,  # Set autocommit to True if the query doesn't require a transaction
-    database='dev',  # Specify your Redshift database name
+    autocommit=True,
+    database='dev',
     dag=dag,
 )
 # Define the Redshift PostgresOperator task
 count_orders_redshift_sql_task = PostgresOperator(
     task_id='count_orders_redshift_sql_task',
-    postgres_conn_id=redshift_postgres_conn,  # Connection ID to your Redshift cluster
+    postgres_conn_id=redshift_postgres_conn,
     sql="SELECT * FROM PUBLIC.orders;",
-    autocommit=True,  # Set autocommit to True if the query doesn't require a transaction
-    database='dev',  # Specify your Redshift database name
+    autocommit=True,
+    database='dev',
     dag=dag,
 )
 # Define the Redshift PostgresOperator task
 count_order_items_redshift_sql_task = PostgresOperator(
     task_id='count_order_items_redshift_sql_task',
-    postgres_conn_id=redshift_postgres_conn,  # Connection ID to your Redshift cluster
+    postgres_conn_id=redshift_postgres_conn,
     sql="SELECT * FROM PUBLIC.order_items;",
-    autocommit=True,  # Set autocommit to True if the query doesn't require a transaction
-    database='dev',  # Specify your Redshift database name
+    autocommit=True,
+    database='dev',
     dag=dag,
 )
 # Define the Redshift PostgresOperator task
 count_order_payments_redshift_sql_task = PostgresOperator(
     task_id='count_order_payments_redshift_sql_task',
-    postgres_conn_id=redshift_postgres_conn,  # Connection ID to your Redshift cluster
+    postgres_conn_id=redshift_postgres_conn,
     sql="SELECT * FROM PUBLIC.order_payments;",
-    autocommit=True,  # Set autocommit to True if the query doesn't require a transaction
-    database='dev',  # Specify your Redshift database name
+    autocommit=True,
+    database='dev',
     dag=dag,
 )
 
