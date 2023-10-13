@@ -42,23 +42,6 @@ redshift_poll_interval = 10
 redshift_postgres_conn = "redshift_postgres_default"
 aws_region = "ap-southeast-1"
 
-# Create Bucket
-# create_bucket = S3CreateBucketOperator(
-#     task_id="create_bucket",
-#     bucket_name=bucket_name,
-#     region_name=aws_region,
-#     aws_conn_id=aws_conn,
-#     dag=dag,
-# )
-# Delete Bucket
-# delete_bucket = S3DeleteBucketOperator(
-#     task_id="delete_bucket",
-#     bucket_name="test-brazilian-olist",
-#     force_delete=True,
-#     aws_conn_id=aws_conn,
-#     dag=dag,
-# )
-
 # Transfer SQL to S3
 sql_to_s3_order_items = SqlToS3Operator(
     task_id="sql_to_s3_order_items",
@@ -72,7 +55,6 @@ sql_to_s3_order_items = SqlToS3Operator(
     pd_kwargs={'index': False},
     dag=dag,
 )
-
 # Transfer SQL to S3
 sql_to_s3_order_payments = SqlToS3Operator(
     task_id="sql_to_s3_order_payments",
@@ -86,7 +68,6 @@ sql_to_s3_order_payments = SqlToS3Operator(
     pd_kwargs={'index': False},
     dag=dag,
 )
-
 # Transfer SQL to S3
 sql_to_s3_orders = SqlToS3Operator(
     task_id="sql_to_s3_orders",
@@ -100,11 +81,12 @@ sql_to_s3_orders = SqlToS3Operator(
     pd_kwargs={'index': False},
     dag=dag,
 )
-
 # Transfer SQL to S3
 sql_to_s3_products = SqlToS3Operator(
     task_id="sql_to_s3_products",
-    query="SELECT * FROM PUBLIC.products;",
+    # query="SELECT * FROM PUBLIC.products;",
+    # query="SELECT * FROM PUBLIC.products LIMIT 10;",
+    query="SELECT * FROM PUBLIC.products WHERE product_id = 'fffe9eeff12fcbd74a2f2b007dde0c58';",
     s3_bucket=bucket_name,
     s3_key=bucket_subfolder + "products-" + str(current_date) + ".csv",
     replace=True,
@@ -114,7 +96,6 @@ sql_to_s3_products = SqlToS3Operator(
     pd_kwargs={'index': False},
     dag=dag,
 )
-
 # Transfer SQL to S3
 sql_to_s3_sellers = SqlToS3Operator(
     task_id="sql_to_s3_sellers",
@@ -129,6 +110,7 @@ sql_to_s3_sellers = SqlToS3Operator(
     dag=dag,
 )
 
+
 # Transfer S3 to Redshit
 transfer_s3_to_redshift_products = S3ToRedshiftOperator(
     task_id="transfer_s3_to_redshift_products",
@@ -139,10 +121,10 @@ transfer_s3_to_redshift_products = S3ToRedshiftOperator(
     redshift_conn_id=redshift_conn,
     aws_conn_id=aws_conn,
     copy_options=["FORMAT AS CSV", "DELIMITER ','", "QUOTE '\"'", 'IGNOREHEADER 1', f"REGION AS '{aws_region}'"],
-    method="REPLACE",
+    method="UPSERT", # Use APPEND, UPSERT and REPLACE
+    upsert_keys=["product_id"], # List of fields to use as key on upsert action
     dag=dag,
 )
-
 # Transfer S3 to Redshit
 transfer_s3_to_redshift_sellers = S3ToRedshiftOperator(
     task_id="transfer_s3_to_redshift_sellers",
@@ -153,10 +135,10 @@ transfer_s3_to_redshift_sellers = S3ToRedshiftOperator(
     redshift_conn_id=redshift_conn,
     aws_conn_id=aws_conn,
     copy_options=["FORMAT AS CSV", "DELIMITER ','", "QUOTE '\"'", 'IGNOREHEADER 1', f"REGION AS '{aws_region}'"],
-    method="REPLACE",
+    method="REPLACE", # Use APPEND, UPSERT and REPLACE
+    # upsert_keys=[], # List of fields to use as key on upsert action
     dag=dag,
 )
-
 # Transfer S3 to Redshit
 transfer_s3_to_redshift_orders = S3ToRedshiftOperator(
     task_id="transfer_s3_to_redshift_orders",
@@ -167,10 +149,10 @@ transfer_s3_to_redshift_orders = S3ToRedshiftOperator(
     redshift_conn_id=redshift_conn,
     aws_conn_id=aws_conn,
     copy_options=["FORMAT AS CSV", "DELIMITER ','", "QUOTE '\"'", 'IGNOREHEADER 1', f"REGION AS '{aws_region}'"],
-    method="REPLACE",
+    method="REPLACE", # Use APPEND, UPSERT and REPLACE
+    # upsert_keys=[], # List of fields to use as key on upsert action
     dag=dag,
 )
-
 # Transfer S3 to Redshit
 transfer_s3_to_redshift_order_items = S3ToRedshiftOperator(
     task_id="transfer_s3_to_redshift_order_items",
@@ -181,10 +163,10 @@ transfer_s3_to_redshift_order_items = S3ToRedshiftOperator(
     redshift_conn_id=redshift_conn,
     aws_conn_id=aws_conn,
     copy_options=["FORMAT AS CSV", "DELIMITER ','", "QUOTE '\"'", 'IGNOREHEADER 1', f"REGION AS '{aws_region}'"],
-    method="REPLACE",
+    method="REPLACE", # Use APPEND, UPSERT and REPLACE
+    # upsert_keys=[], # List of fields to use as key on upsert action
     dag=dag,
 )
-
 # Transfer S3 to Redshit
 transfer_s3_to_redshift_order_payments = S3ToRedshiftOperator(
     task_id="transfer_s3_to_redshift_order_payments",
@@ -195,7 +177,8 @@ transfer_s3_to_redshift_order_payments = S3ToRedshiftOperator(
     redshift_conn_id=redshift_conn,
     aws_conn_id=aws_conn,
     copy_options=["FORMAT AS CSV", "DELIMITER ','", "QUOTE '\"'", 'IGNOREHEADER 1', f"REGION AS '{aws_region}'"],
-    method="REPLACE",
+    method="REPLACE", # Use APPEND, UPSERT and REPLACE
+    # upsert_keys=[], # List of fields to use as key on upsert action
     dag=dag,
 )
 
