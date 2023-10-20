@@ -2,8 +2,7 @@
   
     
 
-        create or replace transient table BRAZILIAN_OLIST.PUBLIC.fact_order_items
-         as
+        create or replace transient table BRAZILIAN_OLIST.PUBLIC.fact_order_items  as
         (with order_items as (select *
                      from BRAZILIAN_OLIST.PUBLIC.stg_eltool__order_items),
      products as (select *

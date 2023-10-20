@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."stg_eltool__orders__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     with source as (select *
                 from "my_database"."public"."orders"),
      renamed as (select order_id,

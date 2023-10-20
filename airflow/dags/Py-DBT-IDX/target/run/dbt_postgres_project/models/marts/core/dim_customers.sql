@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."dim_customers__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     -- noinspection SqlDialectInspectionForFile
 
 with customers as (

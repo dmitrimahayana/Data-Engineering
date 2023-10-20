@@ -2,8 +2,7 @@
   
     
 
-        create or replace transient table BRAZILIAN_OLIST.PUBLIC.dim_sellers
-         as
+        create or replace transient table BRAZILIAN_OLIST.PUBLIC.dim_sellers  as
         (-- noinspection SqlDialectInspectionForFile
 
 with sellers as (

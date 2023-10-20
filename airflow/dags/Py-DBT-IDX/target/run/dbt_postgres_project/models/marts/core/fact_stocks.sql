@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."fact_stocks__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     -- noinspection SqlDialectInspectionForFile
 
 with stock as (

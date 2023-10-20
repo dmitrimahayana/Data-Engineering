@@ -2,3 +2,14 @@
 Py-Kafka-SASL/SendEmail.py
 airflow/dags/Py-DBT-IDX/profiles.yml
 airflow/dags/Py-DBT-Snowflake-Brazilian_Olist/profiles.yml
+airflow/dags/Py-DBT-Redshift-BrazilianOlist/profiles.yml
+*.yml
+*.pyc
+*.pyc
+*.iml
+*.log
+*.log
+*.xml
+*.json
+*.json
+*.json

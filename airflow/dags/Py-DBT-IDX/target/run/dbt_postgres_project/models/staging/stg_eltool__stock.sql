@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."stg_eltool__stock__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     with source as (select DISTINCT *
                 from "my_database"."public"."ksql-stock-stream"),
      renamed as (select *

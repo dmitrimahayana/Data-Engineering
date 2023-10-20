@@ -1,8 +1,5 @@
 
-  create view "my_database"."public"."stock_update_status__dbt_tmp"
-    
-    
-  as (
+  create view "my_database"."public"."stock_update_status__dbt_tmp" as (
     with stock as (select *,
                       ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY date desc) AS rownum
                from "my_database"."public"."fact_stocks")

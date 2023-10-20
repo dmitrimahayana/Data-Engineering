@@ -1,13 +1,14 @@
 mongodb_config = {
-    'hostname': 'localhost',
-    'port': '27017'
+    'hostname': 'mongodb-server',
+    'port': '27017',
+    'database': 'kafka',
 }
 
 postgres_config = {
-    'hostname': 'localhost',
+    'hostname': 'postgresdb',
     'port': '5432',
     'username': 'postgres',
     'password': 'postgres',
-    'database': 'IDX-Stock',
-    'schema': 'IDX-Schema',
+    'database': 'my_database',
+    'schema': 'public',
 }

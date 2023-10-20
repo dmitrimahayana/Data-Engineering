@@ -60,6 +60,7 @@ class Extract_Flights:
                 # df_final.loc[:, 'aircraft_type'] = aircraft_type
                 # df_final.loc[:, 'flight_rules'] = flight_rules
                 df_final = df_final[['id', 'aircraft_type', 'flight_rules', 'plots_altitude', 'plots_baro_vert_rate', 'plots_mach', 'plots_measured_flight_level', 'start_time', 'time_of_track']]
+                df_final = df_final.drop_duplicates()
                 df_cleaned = df_final.dropna(subset=['time_of_track'])
 
                 #return value
@@ -70,5 +71,15 @@ class Extract_Flights:
 # json_files = [pos_json for pos_json in os.listdir(folder_path) if pos_json.endswith('.json')]
 # file_name = '100002.json'
 # flight_obj = Extract_Flights(folder_path+file_name)
-# flight = flight_obj.extract_data()
-# print(flight)
+# df = flight_obj.extract_data()
+# print(df.dtypes)
+# print("Lenght DF:", len(df. index))
+
+# sql_list = []
+# for index, row in df.iterrows():
+#         sql_values = ", ".join([str(val) if isinstance(val, (int, float)) else f"'{val}'" for val in row])
+#         sql_statement = f"INSERT INTO TABLE VALUES ({sql_values});"
+#         sql_list.append(sql_statement)
+        
+# sql_multiple_stmts = "".join(sql_list)
+# print(sql_multiple_stmts)
