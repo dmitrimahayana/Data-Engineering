@@ -2,8 +2,7 @@
   
     
 
-        create or replace transient table BRAZILIAN_OLIST.PUBLIC.stg_eltool__products
-         as
+        create or replace transient table BRAZILIAN_OLIST.PUBLIC.stg_eltool__products  as
         (with source as (select *
                 from BRAZILIAN_OLIST.public.products),
      renamed as (select product_id,

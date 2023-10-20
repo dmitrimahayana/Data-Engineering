@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."stg_eltool__company__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     with source as (select *
                 from "my_database"."public"."ksql-company-stream"),
      renamed as (select id,

@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."stg_eltool__state__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     with source as (select *
                 from "my_database"."public"."state"),
      renamed as (select state_identifier::INT AS state_id,

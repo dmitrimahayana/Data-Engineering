@@ -35,5 +35,15 @@ class Collect_Flights:
         return df_final
 
 # collect_obj = Collect_Flights('D:\\00 Project\\00 My Project\\Dataset\\Revalue_Nature\\Case 2\\', 10)
-# df_result = collect_obj.collect_data()
-# print(df_result)
+# df = collect_obj.collect_data()
+# # print(df)
+
+# # Convert SQL Insert Format
+# sql_list = []
+# for index, row in df.head(2).iterrows():
+#         sql_values = ", ".join([str(val) if isinstance(val, (int, float)) else f"'{val}'" for val in row])
+#         sql_statement = f"INSERT INTO TABLE VALUES ({sql_values});"
+#         sql_list.append(sql_statement)
+        
+# sql_multiple_stmts = " ".join(sql_list)
+# print(sql_multiple_stmts)

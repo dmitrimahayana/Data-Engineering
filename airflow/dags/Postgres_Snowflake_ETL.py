@@ -32,7 +32,8 @@ SNOWFLAKE_DB = "FLIGHTS"
 SNOWFLAKE_SCHEMA = "FLIGHT_SCHEMA"
 SNOWFLAKE_TABLE = "Flight_List"
 SNOWFLAKE_USER = "NAINAFI"
-SNOWFLAKE_PASS = Variable.get("snowflake_pass")
+SNOWFLAKE_PASS = "Cakcuk623827"
+# SNOWFLAKE_PASS = Variable.get("snowflake_pass")
 SNOWFLAKE_ACC = "IUDFCYJ-UD33577"
 
 ## Tas SnowflakeOperator: Create Table

@@ -3,11 +3,7 @@
     
 
   create  table "my_database"."public"."fact_orders__dbt_tmp"
-  
-  
-    as
-  
-  (
+  as (
     with orders as (
     select *
     from "my_database"."public"."stg_eltool__orders"
