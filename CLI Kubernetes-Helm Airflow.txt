@@ -1,0 +1,156 @@
+## Install Custom Cluster
+kind create cluster --name airflow-cluster --config kind-cluster.yaml
+
+## Check Custom Cluster
+kubectl cluster-info --context kind-airflow-cluster
+
+## Install Default Cluster
+kind create cluster --image kindest/node:v1.21.1
+
+## Check Default Cluster Info
+kubectl cluster-info --context kind-kind
+
+## Add Airflow Helm Stable Repo
+helm repo add apache-airflow https://airflow.apache.org
+helm repo update
+
+## Create Namespace
+export NAMESPACE=airflow
+export RELEASE_NAME=airflow
+echo $NAMESPACE $RELEASE_NAME
+kubectl create namespace $NAMESPACE
+
+## Get Namespace
+kubectl get namespace
+
+## Install the chart
+helm install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug
+
+## Confirm the pods are up
+kubectl get pods --namespace $NAMESPACE
+helm list --namespace $NAMESPACE
+
+## Run the following command to port-forward the Airflow UI to http://localhost:8080/ to confirm Airflow is working
+kubectl port-forward svc/$RELEASE_NAME-webserver 8080:8080 --namespace $NAMESPACE
+
+========================================================================================================================
+
+## Error When Installing Helm Airflow
+# 1. Delete the Helm release
+helm delete airflow --namespace airflow
+
+# 2. Check your PODs
+kubectl get pods -n airflow
+
+# 3. If airflow-migrations is in ContainerCreating state delete it
+kubectl get jobs -n airflow
+kubectl delete jobs <pods_name_of_airflow_migrations> -n airflow
+
+# 4. Install the chart again
+helm install airflow apache-airflow/airflow --namespace airflow --debug --timeout 10m0s
+
+========================================================================================================================
+
+## Autoscaling with KEDA
+# Create new keda cluster
+kubectl create namespace keda
+
+# Install KEDA
+helm install keda kedacore/keda --namespace keda \
+	--version "v2.0.0"
+
+# check pods status
+kubectl get pods --namespace keda
+helm list --namespace keda 
+
+# Install Airflow with KEDA
+helm install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug \
+	--set executor=CeleryExecutor \
+	--set workers.keda.enabled=true
+
+# Updgrae Airflow with KEDA
+helm upgrade $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug \
+	--set executor=CeleryExecutor \
+	--set workers.keda.enabled=true
+
+========================================================================================================================
+
+## Adding DAGs to your image
+# Create a project
+mkdir my-airflow-project && cd my-airflow-project
+mkdir dags  # put dags here
+cat <<EOM > Dockerfile
+FROM apache/airflow
+COPY . .
+RUN pip install pandas
+RUN pip install pymongo==3.11.3
+RUN pip install dbt-core==1.4.9
+RUN pip install dbt-redshift
+RUN pip install dbt-snowflake
+RUN pip install dbt-postgres
+RUN pip install airflow-dbt==0.4.0
+RUN pip install apache-airflow[google]
+RUN pip install apache-airflow[amazon]
+RUN pip install pandas_gbq google-oauth2-tool==0.0.3
+RUN pip install snowflake-connector-python
+RUN pip install snowflake-sqlalchemy
+RUN pip install apache-airflow-providers-snowflake
+RUN pip install 'pyarrow>=10.0.1,<10.1.0'
+EOM
+
+# build the image:
+docker build --pull --tag my-dags:0.0.1 .
+
+# Load the image into kind:
+kind load docker-image my-dags:0.0.1
+kind load docker-image my-dags:0.0.1 --name airflow-cluster
+
+# Upgrade Helm Airflow:
+helm upgrade $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug -f override.yaml \
+	--set executor=CeleryExecutor \
+	--set workers.keda.enabled=true \
+	--set images.airflow.repository=my-dags \
+	--set images.airflow.tag=0.0.1
+
+# Upgrade Helm Airflow yaml file:
+helm upgrade $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE -f override.yaml --debug
+
+========================================================================================================================
+
+## Delete Helm
+helm delete $RELEASE_NAME --namespace $NAMESPACE
+helm delete airflow --namespace airflow
+helm delete keda --namespace keda
+
+## Delete Cluster
+kind delete cluster
+
+## Delete Custom Cluster
+kind delete cluster --name airflow-cluster
+kind delete cluster --name keda
+
+========================================================================================================================
+
+## Modifying values.yaml
+# Download current values.yaml
+helm show values apache-airflow/airflow > values.yaml
+
+# Re-install airflow after modifying values.yaml
+helm upgrade --install $RELEASE_NAME apache-airflow/airflow --n $NAMESPACE -f values.yaml --debug
+
+# Check pod
+kubectl get pods --namespace $NAMESPACE
+helm list --namespace $NAMESPACE
+
+========================================================================================================================
+
+## Connection
+secret:
+  - envName: "aws_default"
+    secretName: "AKIAUNMN3PLZYIZ2PHVR"
+    secretKey: "my-secret-key"
+
+extraSecrets:
+  AKIAUNMN3PLZYIZ2PHVR:
+    data: |
+      my-secret-key: 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
