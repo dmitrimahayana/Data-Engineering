@@ -5,7 +5,7 @@ kind create cluster --name airflow-cluster --config kind-cluster.yaml
 kubectl cluster-info --context kind-airflow-cluster
 
 ## Install Default Cluster
-kind create cluster --image kindest/node:v1.21.1
+kind create cluster --image kindest/node:v1.27.3
 
 ## Check Default Cluster Info
 kubectl cluster-info --context kind-kind
@@ -15,8 +15,7 @@ helm repo add apache-airflow https://airflow.apache.org
 helm repo update
 
 ## Create Namespace
-export NAMESPACE=airflow
-export RELEASE_NAME=airflow
+export NAMESPACE=airflow RELEASE_NAME=airflow
 echo $NAMESPACE $RELEASE_NAME
 kubectl create namespace $NAMESPACE
 
@@ -52,12 +51,15 @@ helm install airflow apache-airflow/airflow --namespace airflow --debug --timeou
 ========================================================================================================================
 
 ## Autoscaling with KEDA
+# Add keda repo
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+
 # Create new keda cluster
 kubectl create namespace keda
 
 # Install KEDA
-helm install keda kedacore/keda --namespace keda \
-	--version "v2.0.0"
+helm install keda kedacore/keda --namespace keda --debug
 
 # check pods status
 kubectl get pods --namespace keda
@@ -68,10 +70,23 @@ helm install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug
 	--set executor=CeleryExecutor \
 	--set workers.keda.enabled=true
 
-# Updgrae Airflow with KEDA
+# Upgrade Airflow with KEDA
 helm upgrade $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug \
 	--set executor=CeleryExecutor \
 	--set workers.keda.enabled=true
+
+# Check Pods
+kubectl get pods --namespace $NAMESPACE
+
+========================================================================================================================
+
+## KEDA Installation Error
+# Get list all CRD
+kubectl get crd
+
+# Delete 1 by 1 CRD
+kubectl delete crd CRDNAME
+kubectl delete crd scaledjobs.keda.sh
 
 ========================================================================================================================
 
@@ -115,6 +130,13 @@ helm upgrade $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug
 # Upgrade Helm Airflow yaml file:
 helm upgrade $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE -f override.yaml --debug
 
+# Install Custome Airflow
+helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug -f override.yaml \
+	--set executor=CeleryExecutor \
+	--set workers.keda.enabled=true \
+	--set images.airflow.repository=my-dags \
+	--set images.airflow.tag=0.0.1
+
 ========================================================================================================================
 
 ## Delete Helm
@@ -147,10 +169,10 @@ helm list --namespace $NAMESPACE
 ## Connection
 secret:
   - envName: "aws_default"
-    secretName: "AKIAUNMN3PLZYIZ2PHVR"
+    secretName: "AKIAUNXXXX"
     secretKey: "my-secret-key"
 
 extraSecrets:
-  AKIAUNMN3PLZYIZ2PHVR:
+  AKIAUNXXXX:
     data: |
-      my-secret-key: 4YrAuDJyqG66tonq1bhNSnr/aYyBMAskxtu4auXL
+      my-secret-key: 4YrAuXXXXX
