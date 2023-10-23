@@ -1,0 +1,5 @@
+config:
+  webserver:
+    expose_config: 'True'  # by default this is 'False'
+
+webserverSecretKey: ae74d8dfcfea827d34d66fb305aa6414
