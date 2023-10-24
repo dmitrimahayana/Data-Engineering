@@ -1,0 +1,128 @@
+# Export Variable
+export NAMESPACE=airflow-git RELEASE_NAME=airflow-git
+echo $NAMESPACE $RELEASE_NAME
+
+# Create Cluster
+kind create cluster --name $NAMESPACE
+
+# Show Cluster
+kubectl cluster-info --context kind-$NAMESPACE
+
+# Create Namespace
+kubectl create namespace $NAMESPACE
+
+# Upgrade and Install
+helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug --timeout 10m0s \
+	-f override.yaml
+
+# Show Pods and List
+kubectl get pods --namespace $NAMESPACE
+helm list --namespace $NAMESPACE
+
+# Deploy Webserver
+kubectl port-forward svc/$RELEASE_NAME-webserver 8080:8080 --namespace $NAMESPACE
+
+# Create Dockerfile
+cat <<EOM > Dockerfile
+FROM apache/airflow
+RUN pip install pandas
+RUN pip install pymongo==3.11.3
+RUN pip install dbt-core==1.4.9
+RUN pip install dbt-redshift
+RUN pip install dbt-snowflake
+RUN pip install dbt-postgres
+RUN pip install airflow-dbt==0.4.0
+RUN pip install apache-airflow[google]
+RUN pip install apache-airflow[amazon]
+RUN pip install pandas_gbq google-oauth2-tool==0.0.3
+RUN pip install snowflake-connector-python
+RUN pip install snowflake-sqlalchemy
+RUN pip install apache-airflow-providers-snowflake
+RUN pip install 'pyarrow>=10.0.1,<10.1.0'
+EOM
+
+# Build Image
+docker build --pull --tag my-extra-pip:0.0.1 .
+
+# Load Image
+kind load docker-image my-extra-pip:0.0.1 --name $NAMESPACE
+  
+# Upgrade Helm Airflow:
+helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug --timeout 10m0s \
+	-f override.yaml \
+	-f volumes.yaml \
+	--set images.airflow.repository=my-extra-pip \
+	--set images.airflow.tag=0.0.1
+
+# Show Pods and List
+kubectl get pods --namespace $NAMESPACE
+helm list --namespace $NAMESPACE
+
+# Check Secrets
+kubectl get secrets --namespace $NAMESPACE
+kubectl get secrets aws-connections --namespace $NAMESPACE
+
+# Delete Helm
+helm uninstall $RELEASE_NAME --namespace $NAMESPACE
+
+# Delete Custom Cluster
+kind delete cluster --name $NAMESPACE
+
+====================================================================================================================================================================================
+
+# Enter POD Webserver
+export WEBSERVER_POD_NAME="$(kubectl get pods --no-headers -o custom-columns=":metadata.name" --namespace $NAMESPACE | grep webserver | head -n 1)"
+echo $WEBSERVER_POD_NAME
+kubectl exec -it $WEBSERVER_POD_NAME -n $NAMESPACE -- /bin/bash
+
+# Add new connection
+airflow connections add 'aws_default' --conn-uri 'aws://@/?aws_access_key_id=ACCESS_KEY&aws_secret_access_key=SECRET_KEY'
+airflow connections add 'rdsmysql_default' --conn-uri 'mysql://USER:PASSWORD@HOST:3306/my_database'
+airflow connections add 'google_cloud_default' --conn-uri 'google-cloud-platform://@/?project=PROJECT_ID&key_path=/opt/airflow/key_gcp/keyfile.json'
+airflow connections add 'postgres_default' --conn-uri 'postgresql://USER:PASSWORD@HOST:5432/my_database'
+
+====================================================================================================================================================================================
+
+# Create Secret for GCP Connection
+kubectl create secret generic \
+  gcp-keyfile-secret \
+  --from-file=keyfile.json=/home/dmitri/my-airflow-git/key_gcp/ringed-land-398802-1c30c3ab5c17.json \
+  --namespace $NAMESPACE
+
+# Upgrade Helm Airflow:
+helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug --timeout 10m0s \
+	-f override.yaml \
+	-f volumes.yaml \
+	--set images.airflow.repository=my-extra-pip \
+	--set images.airflow.tag=0.0.1
+
+# Check key_gcp/keyfile.json exist
+kubectl exec -it airflow-git-triggerer-0 -n $NAMESPACE -- /bin/bash
+kubectl exec -it airflow-git-triggerer-1 -n $NAMESPACE -- /bin/bash
+kubectl exec -it airflow-git-worker-0 -n $NAMESPACE -- /bin/bash
+kubectl exec -it airflow-git-worker-1 -n $NAMESPACE -- /bin/bash
+kubectl exec -it airflow-git-worker-2 -n $NAMESPACE -- /bin/bash
+ls key_gcp
+
+====================================================================================================================================================================================
+
+## Automation Script to Add Connection
+# Create add_connection.sh using above connection
+airflow connections add 'aws_default' --conn-uri 'aws://@/?aws_access_key_id=ACCESS_KEY&aws_secret_access_key=SECRET_KEY'
+airflow connections add 'rdsmysql_default' --conn-uri 'mysql://USER:PASSWORD@HOST:3306/my_database'
+airflow connections add 'google_cloud_default' --conn-uri 'google-cloud-platform://@/?project=PROJECT_ID&key_path=/opt/airflow/key_gcp/keyfile.json'
+airflow connections add 'postgres_default' --conn-uri 'postgresql://USER:PASSWORD@HOST:5432/my_database'
+
+# Create exec_webserver_pod.sh
+export NAMESPACE=airflow-git RELEASE_NAME=airflow-git
+echo $NAMESPACE $RELEASE_NAMEls
+export WEBSERVER_POD_NAME="$(kubectl get pods --no-headers -o custom-columns=":metadata.name" --namespace $NAMESPACE | grep webserver | head -n 1)"
+echo $WEBSERVER_POD_NAME
+kubectl cp ./add_connection.sh $NAMESPACE/$WEBSERVER_POD_NAME:/opt/airflow
+kubectl exec -it $WEBSERVER_POD_NAME -n $NAMESPACE -- /bin/bash
+
+# Run Automation Login Webserver
+sh exec_webserver_pod.sh
+
+# Run Automation Add Connection
+sh add_connection.sh
