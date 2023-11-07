@@ -1,10 +1,19 @@
-# For Debugging purpose, run below:
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=8888
-
 # For Normal Installation, run below:
 pip install --upgrade pip
 pip install playwright
 playwright install
+
+# Install custom browsers, supports chromium, chrome, chrome-beta, msedge, msedge-beta, msedge-dev, firefox, firefox-asan, webkit.
+playwright install chrome
+
+# Navigate to Playwrights Browsers
+C:\Users\dmitr\AppData\Local\ms-playwright
+C:\Users\dmitr\AppData\Local\ms-playwright\chromium-1084\chrome-win
+
+# For Debugging purpose, run below:
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
+C:\Users\dmitr\AppData\Local\ms-playwright\chromium-1084\chrome-win\chrome.exe --remote-debugging-port=9222
+
 
 # Run Recording:
 playwright codegen
