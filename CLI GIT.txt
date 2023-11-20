@@ -11,17 +11,17 @@ git status
 #Add README
 git add README.md
 
+## Push Git to Repo
 #Add all files
 git add .
 
 #Commit Code
 git commit -m "first commit"
 
--a: Means to commit all changes in the working directory
--m: Pass a message as the commit message
-"MSG": The text there is your commit message and should describe what you have done
+	-a: Means to commit all changes in the working directory
+	-m: Pass a message as the commit message
+	"MSG": The text there is your commit message and should describe what you have done
 
-## Push Git to Repo
 #Choose branch
 git branch -M main
 
