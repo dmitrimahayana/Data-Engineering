@@ -1,0 +1,20 @@
+Deploy Python Script to AWS Lambda:
+1. python -m venv my_virtual_env
+2. .\my_virtual_env\Scripts\activate
+3. pip install your_packages
+4. python .\main.py
+5. cd .\my_virtual_env\Lib\site-packages\
+6. Compress-Archive -Path * -DestinationPath ..\..\..\my_deployment_package.zip
+7. Compress-Archive -LiteralPath ..\..\..\main.py -DestinationPath ..\..\..\my_deployment_package.zip -Update
+
+--------------------------------------------------------------------------------------------------------------
+
+1. mkdir lambda_layer
+2. cd lambda_layerpython
+3. mkdir python
+4. cd python
+5. pip install requests pyTelegramBotAPI==4.14.1 feedparser==6.0.11 pytz psycopg2 -t ./
+pip install aws-psycopg2 -t ./
+6. Go to lamda_laywer
+7. Extract python to python.zip
+8. Upload to Lambda Layer
