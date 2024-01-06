@@ -38,5 +38,17 @@ docker network connect my_docker_network airbyte-proxy
 docker network connect my_docker_network jobmanager
 docker network connect my_docker_network taskmanager
 
+#Docker add network connection between Python App
+docker network connect my_docker_network rss-feeder-upwork-app
+
 ##Container Terminal
 docker exec -it spark-master /bin/bash
+
+##Run Python on the same network
+docker stop rss-feeder-upwork-app && docker rm rss-feeder-upwork-app && docker run --name rss-feeder-upwork-app --network my_docker_network -d -e BOT_TOKEN=$BOT_TOKEN -e BOT_CHANNEL_ID=$BOT_CHANNEL_ID rss-feeder-upwork-app
+docker run --rm --name rss-feeder-container --network my_docker_network -e BOT_TOKEN=$BOT_TOKEN -e BOT_CHANNEL_ID=$BOT_CHANNEL_ID rss-feeder-upwork-app 
+docker stop rss-feeder-container-truncate && docker rm rss-feeder-container-truncate && docker run --name rss-feeder-container-truncate --network my_docker_network -d rss-feeder-upwork-app python clear_table.py
+
+## Enable Disable Crontab
+sudo service cron start
+sudo service cron stop
