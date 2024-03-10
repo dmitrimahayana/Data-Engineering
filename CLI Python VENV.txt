@@ -1,0 +1,21 @@
+# Install Virtual Env
+pip install virtualenv
+
+# Create Virtual Env
+python -m venv myenv
+
+# Activate Virtual Env
+myenv\Scripts\activate
+
+# Deactivate Virtual Env
+deactivate
+
+# Installing Requirements
+pip install -r requirements.txt
+
+# Install Torch with CUDA 117
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+
+# Uninstalling All Packages in Virtual Env
+pip freeze > uninstall_reqs.txt
+pip uninstall -y -r uninstall_reqs.txt
