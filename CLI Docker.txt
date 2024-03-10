@@ -45,10 +45,19 @@ docker network connect my_docker_network rss-feeder-upwork-app
 docker exec -it spark-master /bin/bash
 
 ##Run Python on the same network
+docker build -t rss-feeder-upwork-app .
 docker stop rss-feeder-upwork-app && docker rm rss-feeder-upwork-app && docker run --name rss-feeder-upwork-app --network my_docker_network -d -e BOT_TOKEN=$BOT_TOKEN -e BOT_CHANNEL_ID=$BOT_CHANNEL_ID rss-feeder-upwork-app
-docker run --rm --name rss-feeder-container --network my_docker_network -e BOT_TOKEN=$BOT_TOKEN -e BOT_CHANNEL_ID=$BOT_CHANNEL_ID rss-feeder-upwork-app 
 docker stop rss-feeder-container-truncate && docker rm rss-feeder-container-truncate && docker run --name rss-feeder-container-truncate --network my_docker_network -d rss-feeder-upwork-app python clear_table.py
+docker run --rm --name rss-feeder-container --network my_docker_network -e BOT_TOKEN=$BOT_TOKEN -e BOT_CHANNEL_ID=$BOT_CHANNEL_ID rss-feeder-upwork-app 
 
 ## Enable Disable Crontab
+systemctl status cron
 sudo service cron start
 sudo service cron stop
+
+## Upgrade Max Memory VM
+sudo sysctl -w vm.max_map_count=262144
+
+## Docker Build Image and Container
+docker build -t semantic_search_image .
+docker run -d --name semantic_search  --mount type=bind,source="D:/00 Project/07 Freelancer/Borneo Indobara/Dataset Hazard",target=/home/ugemsohs/datasets -p 8000:8000 semantic_search_image

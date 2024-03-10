@@ -13,14 +13,15 @@ kubectl create namespace $NAMESPACE
 
 # Upgrade and Install
 helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug --timeout 10m0s \
-	-f override.yaml
+	-f override.yaml \
+	-f volumes.yaml
 
-# Show Pods and List
+# Check Pods and List
 kubectl get pods --namespace $NAMESPACE
 helm list --namespace $NAMESPACE
 
 # Deploy Webserver
-kubectl port-forward svc/$RELEASE_NAME-webserver 8080:8080 --namespace $NAMESPACE
+kubectl port-forward svc/$RELEASE_NAME-webserver 8181:8080 --namespace $NAMESPACE
 
 # Create Dockerfile
 cat <<EOM > Dockerfile
@@ -50,11 +51,10 @@ kind load docker-image my-extra-pip:0.0.1 --name $NAMESPACE
 # Upgrade Helm Airflow:
 helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug --timeout 10m0s \
 	-f override.yaml \
-	-f volumes.yaml \
 	--set images.airflow.repository=my-extra-pip \
 	--set images.airflow.tag=0.0.1
 
-# Show Pods and List
+# Check Pods and List
 kubectl get pods --namespace $NAMESPACE
 helm list --namespace $NAMESPACE
 
@@ -89,12 +89,18 @@ kubectl create secret generic \
   --from-file=keyfile.json=/home/dmitri/my-airflow-git/key_gcp/ringed-land-398802-1c30c3ab5c17.json \
   --namespace $NAMESPACE
 
-# Upgrade Helm Airflow:
+# Check Secrets
+kubectl get secrets --namespace $NAMESPACE
+
+# Upgrade Helm Airflow with GCP Key and Volume
 helm upgrade --install $RELEASE_NAME apache-airflow/airflow --namespace $NAMESPACE --debug --timeout 10m0s \
 	-f override.yaml \
 	-f volumes.yaml \
 	--set images.airflow.repository=my-extra-pip \
 	--set images.airflow.tag=0.0.1
+
+# Check Pods
+kubectl get pods --namespace $NAMESPACE
 
 # Check key_gcp/keyfile.json exist
 kubectl exec -it airflow-git-triggerer-0 -n $NAMESPACE -- /bin/bash
